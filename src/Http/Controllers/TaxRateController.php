@@ -1,0 +1,132 @@
+<?php
+
+namespace VentureDrake\LaravelCrm\Http\Controllers;
+
+use Illuminate\Http\Request;
+use Illuminate\Http\Response;
+use VentureDrake\LaravelCrm\Http\Requests\StoreTaxRateRequest;
+use VentureDrake\LaravelCrm\Http\Requests\UpdateTaxRateRequest;
+use VentureDrake\LaravelCrm\Models\TaxRate;
+
+class TaxRateController extends Controller
+{
+    /**
+     * Display a listing of the resource.
+     *
+     * @return Response
+     */
+    public function index()
+    {
+        if (TaxRate::all()->count() < 30) {
+            $taxRates = TaxRate::latest()->get();
+        } else {
+            $taxRates = TaxRate::latest()->paginate(30);
+        }
+
+        return view('laravel-crm::settings.tax-rates.index', [
+            'taxRates' => $taxRates,
+        ]);
+    }
+
+    /**
+     * Show the form for creating a new resource.
+     *
+     * @return Response
+     */
+    public function create()
+    {
+        return view('laravel-crm::settings.tax-rates.create');
+    }
+
+    /**
+     * Store a newly created resource in storage.
+     *
+     * @param  Request  $request
+     * @return Response
+     */
+    public function store(StoreTaxRateRequest $request)
+    {
+        $taxRate = TaxRate::create([
+            'name' => $request->name,
+            'rate' => $request->rate,
+            'description' => $request->description,
+            'default' => (($request->default == 'on') ? 1 : 0),
+            'tax_type' => $request->tax_type,
+        ]);
+
+        if ($request->default == 'on') {
+            TaxRate::where('id', '!=', $taxRate->id)->update(['default' => 0]);
+        }
+
+        flash()->success(ucfirst(trans('laravel-crm::lang.tax_rate_stored')));
+
+        return redirect(route('laravel-crm.tax-rates.index'));
+    }
+
+    /**
+     * Display the specified resource.
+     *
+     * @param  int  $id
+     * @return Response
+     */
+    public function show(TaxRate $taxRate)
+    {
+        return view('laravel-crm::settings.tax-rates.show', [
+            'taxRate' => $taxRate,
+        ]);
+    }
+
+    /**
+     * Show the form for editing the specified resource.
+     *
+     * @param  int  $id
+     * @return Response
+     */
+    public function edit(TaxRate $taxRate)
+    {
+        return view('laravel-crm::settings.tax-rates.edit', [
+            'taxRate' => $taxRate,
+        ]);
+    }
+
+    /**
+     * Update the specified resource in storage.
+     *
+     * @param  Request  $request
+     * @param  int  $id
+     * @return Response
+     */
+    public function update(UpdateTaxRateRequest $request, TaxRate $taxRate)
+    {
+        $taxRate->update([
+            'name' => $request->name,
+            'rate' => $request->rate,
+            'description' => $request->description,
+            'default' => (($request->default == 'on') ? 1 : 0),
+            'tax_type' => $request->tax_type,
+        ]);
+
+        if ($request->default == 'on') {
+            TaxRate::where('id', '!=', $taxRate->id)->update(['default' => 0]);
+        }
+
+        flash()->success(ucfirst(trans('laravel-crm::lang.tax_rate_updated')));
+
+        return redirect(route('laravel-crm.tax-rates.show', $taxRate));
+    }
+
+    /**
+     * Remove the specified resource from storage.
+     *
+     * @param  int  $id
+     * @return Response
+     */
+    public function destroy(TaxRate $taxRate)
+    {
+        $taxRate->delete();
+
+        flash()->success(ucfirst(trans('laravel-crm::lang.tax_rate_deleted')));
+
+        return redirect(route('laravel-crm.tax-rates.index'));
+    }
+}

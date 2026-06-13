@@ -1,0 +1,152 @@
+<?php
+
+namespace VentureDrake\LaravelCrm\Http\Controllers;
+
+use Illuminate\Http\Request;
+use Illuminate\Http\Response;
+use Spatie\Permission\Models\Permission;
+use Spatie\Permission\PermissionRegistrar;
+use VentureDrake\LaravelCrm\Http\Requests\StoreRoleRequest;
+use VentureDrake\LaravelCrm\Http\Requests\UpdateRoleRequest;
+use VentureDrake\LaravelCrm\Models\Role;
+
+class RoleController extends Controller
+{
+    /**
+     * Display a listing of the resource.
+     *
+     * @return Response
+     */
+    public function index()
+    {
+        return view('laravel-crm::settings.permissions.role-index');
+    }
+
+    /**
+     * Show the form for creating a new resource.
+     *
+     * @return Response
+     */
+    public function create()
+    {
+        return view('laravel-crm::settings.permissions.role-create', [
+            'permissions' => \VentureDrake\LaravelCrm\Models\Permission::all(),
+        ]);
+    }
+
+    /**
+     * Store a newly created resource in storage.
+     *
+     * @param  Request  $request
+     * @return Response
+     */
+    public function store(StoreRoleRequest $request)
+    {
+        $permissionsArray = [];
+        foreach ($request->permission as $permissionKey => $permissionValue) {
+            $permissionsArray[] = Permission::where('id', $permissionKey)->first()->name;
+        }
+
+        app()[PermissionRegistrar::class]->forgetCachedPermissions();
+
+        if (config('laravel-crm.teams')) {
+            $role = Role::create([
+                'name' => $request->name,
+                'description' => $request->description,
+                'crm_role' => 1,
+                'team_id' => auth()->user()->currentTeam->id,
+            ]);
+        } else {
+            $role = Role::create([
+                'name' => $request->name,
+                'description' => $request->description,
+                'crm_role' => 1,
+            ]);
+        }
+
+        $role->syncPermissions($permissionsArray);
+
+        flash()->success(ucfirst(trans('laravel-crm::lang.role_stored')));
+
+        return redirect(route('laravel-crm.roles.index'));
+    }
+
+    /**
+     * Display the specified resource.
+     *
+     * @param  int  $id
+     * @return Response
+     */
+    public function show(Role $role)
+    {
+        return view('laravel-crm::settings.permissions.role-show', [
+            'role' => $role,
+        ]);
+    }
+
+    /**
+     * Show the form for editing the specified resource.
+     *
+     * @param  int  $id
+     * @return Response
+     */
+    public function edit(Role $role)
+    {
+        return view('laravel-crm::settings.permissions.role-edit', [
+            'role' => $role,
+            'permissions' => \VentureDrake\LaravelCrm\Models\Permission::all(),
+        ]);
+    }
+
+    /**
+     * Update the specified resource in storage.
+     *
+     * @param  Request  $request
+     * @param  int  $id
+     * @return Response
+     */
+    public function update(UpdateRoleRequest $request, Role $role)
+    {
+        if (! in_array($role->name, ['Owner', 'Admin']) && $role->users->count() < 1) {
+            $permissionsArray = [];
+            foreach ($request->permission as $permissionKey => $permissionValue) {
+                $permissionsArray[] = Permission::where('id', $permissionKey)->first()->name;
+            }
+
+            app()[PermissionRegistrar::class]->forgetCachedPermissions();
+            $role->update([
+                'name' => $request->name,
+                'description' => $request->description,
+            ]);
+            $role->syncPermissions($permissionsArray);
+            flash()->success(ucfirst(trans('laravel-crm::lang.role_updated')));
+        } else {
+            flash()->error(ucfirst(trans('laravel-crm::lang.role_cant_be_updated')));
+        }
+
+        return redirect(route('laravel-crm.roles.show', $role));
+    }
+
+    /**
+     * Remove the specified resource from storage.
+     *
+     * @param  int  $id
+     * @return Response
+     */
+    public function destroy(Role $role)
+    {
+        if (! in_array($role->name, ['Owner', 'Admin']) && $role->users->count() < 1) {
+            foreach (Permission::all() as $permission) {
+                $permission->removeRole($role);
+            }
+
+            $role->delete();
+
+            flash()->success(ucfirst(trans('laravel-crm::lang.role_deleted')));
+        } else {
+            flash()->error(ucfirst(trans('laravel-crm::lang.role_cant_be_deleted')));
+        }
+
+        return redirect(route('laravel-crm.roles.index'));
+    }
+}

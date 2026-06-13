@@ -1,0 +1,142 @@
+@import 'tailwindcss';
+@plugin "daisyui";
+
+@plugin "daisyui/theme" {
+    name: "light";
+    default: true;
+    --color-primary: #05b3a9;
+    --color-secondary: #6505B3;
+    --color-accent: #B34105;
+}
+
+@plugin "daisyui/theme" {
+    name: "dark";
+    default: true;
+    --color-primary: #05b3a9;
+    --color-secondary: #6505B3;
+    --color-accent: #B34105;
+}
+
+/*@plugin '@tailwindcss/forms';*/
+@plugin '@tailwindcss/typography';
+
+@source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
+@source '../../vendor/robsontenorio/mary/src/View/Components/**/*.php';
+@source '../../src/View/Components/**/*.php';
+@source '../../resources/views/**/*.blade.php';
+
+/* Safelist specific classes */
+@source inline("bg-success");
+@source inline("bg-error");
+@source inline("bg-warning");
+@source inline("bg-white");
+
+@custom-variant dark (&:is(.dark *));
+
+@theme {
+  --font-sans:
+    Figtree, ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji',
+    'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
+}
+
+/*
+  The default border color has changed to `currentcolor` in Tailwind CSS v4,
+  so we've added these compatibility styles to make sure everything still
+  looks the same as it did with Tailwind CSS v3.
+
+  If we ever want to remove these styles, we need to add an explicit border
+  color utility to any element that depends on these defaults.
+*/
+@layer base {
+  *,
+  ::after,
+  ::before,
+  ::backdrop,
+  ::file-selector-button {
+    border-color: var(--color-gray-200, currentcolor);
+  }
+}
+
+[x-cloak] {
+    display: none;
+}
+
+.input input,
+.select input{
+    font-family: inherit;
+    font-feature-settings: inherit;
+    font-variation-settings: inherit;
+    font-size: 100%;
+    font-weight: inherit;
+    line-height: inherit;
+    letter-spacing: inherit;
+    color: inherit;
+    padding: 0;
+    border: none;
+}
+
+.input input:focus,
+.input input:active,
+.select input:focus,
+.select input:active{
+    outline: none;
+    border: none;
+    box-shadow: none;
+}
+
+.input-neutral {
+    @apply border-gray-400 focus:border-gray-400 focus:outline-gray-400
+}
+
+.autocomplete-input{
+    position: relative;
+}
+
+.autocomplete-input ul{
+    list-style: none;
+    padding: 0;
+    position: absolute;
+    margin: 0;
+    background: white;
+}
+
+.autocomplete-input ul li{
+    background: lavender;
+    padding: 4px;
+    margin-bottom: 1px;
+}
+
+.autocomplete-input ul li:hover{
+    cursor: pointer;
+}
+
+.autocomplete-new {
+    position: absolute !important;
+    right: 4px !important;
+    top:39px !important;
+    z-index: 2;
+    border-radius: 1;
+}
+
+.crm-content > div.mb-10{
+    margin-bottom: calc(var(--spacing)*5) !important;
+}
+
+.drawer .drawer-content.lg\:px-10{
+    padding-inline: calc(var(--spacing)*5) !important;
+}
+
+.cursor-grab{
+    cursor: -webkit-grab;
+    cursor: grab;
+}
+
+.label:is(.input>*,.select>*):first-child{
+    margin-inline: -.75rem .35rem !important;
+}
+
+.btn-rectangle {
+    width: calc(var(--size) * 2);
+    height: var(--size);
+    padding-inline:0
+}

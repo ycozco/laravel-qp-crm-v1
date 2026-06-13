@@ -1,0 +1,119 @@
+<?php
+
+namespace VentureDrake\LaravelCrm\Observers;
+
+use Ramsey\Uuid\Uuid;
+use VentureDrake\LaravelCrm\Models\Invoice;
+use VentureDrake\LaravelCrm\Services\NumberGeneratorService;
+use VentureDrake\LaravelCrm\Services\SettingService;
+
+class InvoiceObserver
+{
+    /**
+     * @var SettingService
+     */
+    private $settingService;
+
+    public function __construct(SettingService $settingService)
+    {
+        $this->settingService = $settingService;
+    }
+
+    /**
+     * Handle the invoice "creating" event.
+     *
+     * @return void
+     */
+    public function creating(Invoice $invoice)
+    {
+        $invoice->external_id = Uuid::uuid4()->toString();
+
+        if (! app()->runningInConsole()) {
+            $invoice->user_created_id = auth()->user()->id ?? null;
+        }
+
+        $invoice->number = NumberGeneratorService::next(Invoice::class, 1000);
+
+        $invoice->prefix = $this->settingService->get('invoice_prefix');
+        $invoice->invoice_id = $invoice->prefix.$invoice->number;
+    }
+
+    /**
+     * Handle the invoice "created" event.
+     *
+     * @return void
+     */
+    public function created(Invoice $invoice)
+    {
+        //
+    }
+
+    /**
+     * Handle the invoice "updating" event.
+     *
+     * @return void
+     */
+    public function updating(Invoice $invoice)
+    {
+        if (! app()->runningInConsole()) {
+            $invoice->user_updated_id = auth()->user()->id ?? null;
+        }
+    }
+
+    /**
+     * Handle the invoice "updated" event.
+     *
+     * @return void
+     */
+    public function updated(Invoice $invoice)
+    {
+        //
+    }
+
+    /**
+     * Handle the invoice "deleting" event.
+     *
+     * @param  \VentureDrake\LaravelCrm\Invoice  $invoice
+     * @return void
+     */
+    public function deleting(Invoice $invoice)
+    {
+        if (! app()->runningInConsole()) {
+            $invoice->user_deleted_id = auth()->user()->id ?? null;
+            $invoice->saveQuietly();
+        }
+    }
+
+    /**
+     * Handle the invoice "deleted" event.
+     *
+     * @return void
+     */
+    public function deleted(Invoice $invoice)
+    {
+        //
+    }
+
+    /**
+     * Handle the invoice "restored" event.
+     *
+     * @return void
+     */
+    public function restored(Invoice $invoice)
+    {
+        if (! app()->runningInConsole()) {
+            $invoice->user_restored_id = auth()->user()->id ?? null;
+            $invoice->saveQuietly();
+        }
+    }
+
+    /**
+     * Handle the invoice "force deleted" event.
+     *
+     * @return void
+     */
+    public function forceDeleted(Invoice $invoice)
+    {
+        //
+    }
+}

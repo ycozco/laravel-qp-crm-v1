@@ -1,0 +1,5 @@
+﻿src\Jobs\SendSmsCampaignRecipient.php
+src\Jobs\SendImportPasswordReset.php
+src\Jobs\SendEmailCampaignRecipient.php
+src\Jobs\RunMonitorCheck.php
+src\Jobs\MaterialiseSmsCampaignRecipients.php

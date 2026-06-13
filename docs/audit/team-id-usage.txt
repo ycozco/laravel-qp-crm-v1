@@ -1,0 +1,295 @@
+﻿tests\Stubs\V1Schema.php:                $table->unsignedBigInteger('team_id')->nullable();
+tests\Stubs\V1Schema.php:            $table->unsignedBigInteger('team_id')->nullable();
+tests\TestSchema.php:                $table->unsignedBigInteger('current_crm_team_id')->nullable();
+tests\TestSchema.php:                $table->unsignedBigInteger('current_team_id')->nullable();
+tests\TestSchema.php:                $table->text('team_ids')->nullable();
+tests\TestSchema.php:            $table->unsignedBigInteger('team_id')->nullable();
+tests\TestSchema.php:            $table->unsignedBigInteger('team_id')->nullable();
+tests\TestSchema.php:            $table->unsignedBigInteger('team_id')->nullable();
+tests\TestSchema.php:            $table->unsignedBigInteger('team_id')->nullable();
+tests\TestSchema.php:            $table->unsignedBigInteger('team_id')->nullable();
+tests\TestSchema.php:            $table->unsignedBigInteger('team_id')->nullable();
+tests\TestSchema.php:            $table->unsignedBigInteger('team_id')->nullable();
+tests\TestSchema.php:            $table->unsignedBigInteger('team_id')->nullable();
+tests\TestSchema.php:            $table->unsignedBigInteger('team_id')->nullable();
+tests\TestSchema.php:            $table->unsignedBigInteger('team_id')->nullable();
+tests\TestSchema.php:            $table->unsignedBigInteger('team_id')->nullable();
+tests\TestSchema.php:            $table->unsignedBigInteger('team_id')->nullable();
+tests\TestSchema.php:            $table->unsignedBigInteger('team_id')->nullable();
+tests\TestSchema.php:            $table->unsignedBigInteger('team_id')->nullable();
+tests\TestSchema.php:            $table->unsignedBigInteger('team_id')->nullable();
+tests\TestSchema.php:            $table->unsignedBigInteger('team_id')->nullable();
+tests\TestSchema.php:            $table->unsignedBigInteger('team_id')->nullable();
+tests\TestSchema.php:            $table->unsignedBigInteger('team_id')->nullable();
+tests\TestSchema.php:            $table->unsignedBigInteger('team_id')->nullable();
+tests\TestSchema.php:            $table->unsignedBigInteger('team_id')->nullable();
+tests\TestSchema.php:            $table->unsignedBigInteger('team_id')->nullable();
+tests\TestSchema.php:            $table->unsignedBigInteger('team_id')->nullable();
+tests\TestSchema.php:            $table->unsignedBigInteger('team_id')->nullable();
+tests\TestSchema.php:            $table->unsignedBigInteger('team_id')->nullable();
+tests\TestSchema.php:            $table->unsignedBigInteger('team_id')->nullable();
+tests\TestSchema.php:            $table->unsignedBigInteger('team_id')->nullable();
+tests\TestSchema.php:            $table->unsignedBigInteger('team_id')->nullable();
+tests\TestSchema.php:            $table->unsignedBigInteger('team_id')->nullable();
+tests\TestSchema.php:            $table->unsignedBigInteger('team_id')->nullable();
+tests\TestSchema.php:            $table->unsignedBigInteger('team_id')->nullable();
+tests\TestSchema.php:            $table->unsignedBigInteger('team_id')->nullable();
+tests\TestSchema.php:            $table->unsignedBigInteger('team_id')->nullable();
+tests\TestSchema.php:            $table->unsignedBigInteger('team_id')->nullable();
+tests\TestSchema.php:            $table->unsignedBigInteger('team_id')->nullable();
+tests\TestSchema.php:            $table->unsignedBigInteger('team_id')->nullable();
+tests\TestSchema.php:            $table->unsignedBigInteger('team_id')->nullable();
+tests\TestSchema.php:            $table->unsignedBigInteger('team_id')->nullable();
+tests\TestSchema.php:            $table->unsignedBigInteger('team_id')->nullable();
+tests\TestSchema.php:            $table->unsignedBigInteger('team_id')->nullable();
+tests\TestSchema.php:            $table->unsignedBigInteger('team_id')->nullable();
+tests\TestSchema.php:            $table->unsignedBigInteger('team_id')->nullable();
+tests\TestSchema.php:            $table->unsignedBigInteger('team_id')->nullable();
+tests\TestSchema.php:            $table->unsignedBigInteger('team_id')->nullable();
+tests\TestSchema.php:            $table->unsignedBigInteger('team_id')->nullable();
+tests\TestSchema.php:            $table->unsignedBigInteger('team_id')->nullable();
+tests\Stubs\User.php:        $id = $this->attributes['current_team_id'] ?? null;
+tests\Stubs\User.php:        $raw = $this->attributes['team_ids'] ?? null;
+src\Traits\HasCrmTeams.php:        return $this->belongsToMany(Team::class, 'crm_team_user', 'user_id', 'crm_team_id');
+src\Traits\HasCrmTeams.php:        return $this->crmTeams()->where('crm_team_id', $team->id)->exists();
+src\Traits\BelongsToTeams.php:            if (config('laravel-crm.teams') && auth()->hasUser() && auth()->user()->currentTeam && ! $model->team_id) {
+src\Traits\BelongsToTeams.php:                $model->team_id = auth()->user()->currentTeam->id ?? null;
+src\Notifications\Concerns\ResolvesFeatureRecipients.php:            $query->where($modelHasRoles.'.team_id', $teamId);
+tests\Feature\FeatureNotificationsTest.php:            $table->unsignedBigInteger('team_id')->nullable();
+tests\Feature\FeatureNotificationsTest.php:            $table->unsignedBigInteger('team_id')->nullable();
+tests\Feature\FeatureNotificationsTest.php:        'team_id' => $teamId,
+tests\Feature\FeatureNotificationsTest.php:    Feature::create(['title' => 'Team 1 feature', 'is_public' => true, 'team_id' => 1]);
+tests\Feature\BelongsToTeamsScopeTest.php:    Lead::create(['title' => 'A', 'team_id' => 1]);
+tests\Feature\BelongsToTeamsScopeTest.php:    Lead::create(['title' => 'B', 'team_id' => 2]);
+src\Mail\EmailCampaignMessage.php:            self::resolveAddressLine($campaign->team_id),
+src\Mail\EmailCampaignMessage.php:            ->when($teamId, fn ($q) => $q->where('team_id', $teamId))
+src\Models\Feature.php:        )->using(FeatureVote::class)->withPivot('team_id')->withTimestamps();
+src\Services\EmailCampaignService.php:                        'team_id' => $campaign->team_id,
+tests\Feature\Seeders\PipelineSeederTest.php:            $table->unsignedBigInteger('team_id')->nullable();
+tests\Feature\InstallCommandTest.php:            $table->unsignedBigInteger('team_id')->nullable();
+tests\Feature\InstallCommandTest.php:        'team_id' => null,
+tests\Feature\InstallCommandTest.php:    if ($teamsEnabled && Schema::hasColumn('model_has_roles', 'team_id')) {
+tests\Feature\InstallCommandTest.php:        $row['team_id'] = null;
+tests\Feature\InstallCommandTest.php:        'team_id' => null,
+tests\Feature\InstallCommandTest.php:        'team_id' => null,
+tests\Feature\InstallCommandTest.php:    $role = DB::table('roles')->where('crm_role', 1)->whereNull('team_id')->first();
+tests\Feature\Api\V2\TeamScopingTest.php:        'current_team_id' => $currentTeamId ?? ($teamIds[0] ?? null),
+tests\Feature\Api\V2\TeamScopingTest.php:        'team_ids' => json_encode($teamIds),
+tests\Feature\Api\V2\TeamScopingTest.php:    Lead::create(['title' => 'Team A Lead 1', 'team_id' => 1]);
+tests\Feature\Api\V2\TeamScopingTest.php:    Lead::create(['title' => 'Team A Lead 2', 'team_id' => 1]);
+tests\Feature\Api\V2\TeamScopingTest.php:    Lead::create(['title' => 'Team B Lead', 'team_id' => 2]);
+tests\Feature\Api\V2\TeamScopingTest.php:    $teamBLead = Lead::create(['title' => 'Hidden', 'team_id' => 2]);
+tests\Feature\Api\V2\TeamScopingTest.php:    Organization::create(['name' => 'Team A Org', 'team_id' => 1]);
+tests\Feature\Api\V2\TeamScopingTest.php:    Organization::create(['name' => 'Team B Org', 'team_id' => 2]);
+tests\Feature\Api\V2\TeamScopingTest.php:    Person::create(['first_name' => 'Alice', 'team_id' => 1]);
+tests\Feature\Api\V2\TeamScopingTest.php:    Person::create(['first_name' => 'Bob', 'team_id' => 2]);
+tests\Feature\Api\V2\TeamScopingTest.php:    Lead::create(['title' => 'Team B Lead', 'team_id' => 2]);
+tests\Feature\Api\V2\TeamScopingTest.php:    Lead::create(['title' => 'Team A Lead', 'team_id' => 1]);
+tests\Feature\Api\V2\TeamScopingTest.php:    Lead::create(['title' => 'Team B Lead 1', 'team_id' => 2]);
+tests\Feature\Api\V2\TeamScopingTest.php:    Lead::create(['title' => 'Team B Lead 2', 'team_id' => 2]);
+tests\Feature\Api\V2\TeamScopingTest.php: * Scenario (d): absence of X-Team-ID falls back to the user's current_team_id.
+tests\Feature\Api\V2\TeamScopingTest.php:test('Without X-Team-ID the request falls back to current_team_id', function () {
+tests\Feature\Api\V2\TeamScopingTest.php:    Lead::create(['title' => 'Team 1 Lead', 'team_id' => 1]);
+tests\Feature\Api\V2\TeamScopingTest.php:    Lead::create(['title' => 'Team 2 Lead A', 'team_id' => 2]);
+tests\Feature\Api\V2\TeamScopingTest.php:    Lead::create(['title' => 'Team 2 Lead B', 'team_id' => 2]);
+src\Services\ChatService.php:                'team_id' => $widget->team_id,
+src\Services\ChatService.php:                'team_id' => $visitor->team_id,
+src\Services\ChatService.php:            'team_id' => $conversation->team_id,
+src\Services\ChatService.php:            'team_id' => $conversation->team_id,
+src\Services\ChatService.php:            'team_id' => $conversation->team_id,
+src\Services\ChatService.php:            'team_id' => $visitor->team_id,
+src\Scopes\BelongsToTeamsScope.php:                        $query->orWhere($model->getTable().'.team_id', auth()->user()->currentTeam->id)
+src\Scopes\BelongsToTeamsScope.php:                    $builder->where($model->getTable().'.team_id', auth()->user()->currentTeam->id);
+src\LaravelCrmServiceProvider.php:                __DIR__.'/../database/migrations/add_team_id_to_laravel_crm_tables.php.stub' => $this->getMigrationFileName($filesystem, 'add_team_id_to_laravel_crm_tables.php', 7),
+src\LaravelCrmServiceProvider.php:                __DIR__.'/../database/migrations/add_team_id_to_xero_tokens_table.php.stub' => $this->getMigrationFileName($filesystem, 'add_team_id_to_xero_tokens_table.php', 42),
+src\LaravelCrmServiceProvider.php:                __DIR__.'/../database/migrations/add_team_id_to_laravel_crm_usage_requests_table.php.stub' => $this->getMigrationFileName($filesystem, 'add_team_id_to_laravel_crm_usage_requests_table.php', 57),
+src\Console\LaravelCrmUpdate.php:                    'team_id' => $person->team_id,
+src\Console\LaravelCrmPermissions.php:                if (Schema::hasColumn($tableNames['roles'], 'team_id')) {
+src\Console\LaravelCrmPermissions.php:                    $rolesQuery->whereNull('team_id');
+src\Console\LaravelCrmPermissions.php:                        'team_id' => $team->id,
+src\Console\LaravelCrmPermissions.php:                        'team_id' => $team->id,
+src\Console\LaravelCrmOrganizationTypes.php:        if (! Schema::hasColumn('organization_types', 'team_id')) {
+src\Console\LaravelCrmOrganizationTypes.php:                ->whereNull('team_id')
+src\Console\LaravelCrmOrganizationTypes.php:                    'team_id' => $team->id,
+src\Console\LaravelCrmOrganizationTypes.php:                        'team_id' => $team->id,
+src\Console\LaravelCrmLabels.php:        if (! Schema::hasColumn('labels', 'team_id')) {
+src\Console\LaravelCrmLabels.php:                ->whereNull('team_id')
+src\Console\LaravelCrmLabels.php:                    'team_id' => $team->id,
+src\Console\LaravelCrmLabels.php:                        'team_id' => $team->id,
+src\Console\LaravelCrmInstall.php:     * whether the Spatie permissions tables get team_id columns.
+src\Console\LaravelCrmInstall.php:        $teamFk = config('permission.column_names.team_foreign_key', 'team_id');
+src\Console\LaravelCrmInstall.php:        if (Schema::hasColumn($roleTable, 'team_id')) {
+src\Console\LaravelCrmInstall.php:            $roleQuery->whereNull('team_id');
+src\Console\LaravelCrmContactTypes.php:        if (! Schema::hasColumn('contact_types', 'team_id')) {
+src\Console\LaravelCrmContactTypes.php:                ->whereNull('team_id')
+src\Console\LaravelCrmContactTypes.php:                    'team_id' => $team->id,
+src\Console\LaravelCrmContactTypes.php:                        'team_id' => $team->id,
+src\Console\LaravelCrmAddressTypes.php:        if (! Schema::hasColumn('address_types', 'team_id')) {
+src\Console\LaravelCrmAddressTypes.php:                ->whereNull('team_id')
+src\Console\LaravelCrmAddressTypes.php:                    'team_id' => $team->id,
+src\Console\LaravelCrmAddressTypes.php:                        'team_id' => $team->id,
+src\Livewire\EmailCampaigns\EmailCampaignShow.php:            $this->campaign->team_id
+src\Livewire\EmailCampaigns\EmailCampaignEdit.php:            $this->campaign->team_id
+src\Http\Middleware\XeroTenant.php:            if ($xeroToken = XeroToken::where('team_id', auth()->user()->currentTeam->id)->first()) {
+src\Http\Middleware\SystemCheck.php:            if (! Schema::hasColumn('users', 'crm_access') || ! Schema::hasColumn('users', 'last_online_at') || ! Schema::hasColumn('users', 'current_crm_team_id')) {
+src\Http\Middleware\SystemCheck.php:                // crm_access, last_online_at, current_crm_team_id
+src\Http\Middleware\HasCrmAccess.php:                'team_id' => auth()->user()->currentTeam->id,
+database\seeders\LaravelCrmTablesSeeder.php:            $roleArray = ['name' => 'Owner', 'crm_role' => 1, 'team_id' => null];
+database\seeders\LaravelCrmTablesSeeder.php:            $roleArray = ['name' => 'Admin', 'crm_role' => 1, 'team_id' => null];
+database\seeders\LaravelCrmTablesSeeder.php:            $roleArray = ['name' => 'Manager', 'crm_role' => 1, 'team_id' => null];
+database\seeders\LaravelCrmTablesSeeder.php:            $roleArray = ['name' => 'Employee', 'crm_role' => 1, 'team_id' => null];
+database\seeders\LaravelCrmSampleDataSeeder.php:                ->whereIn('crm_team_id', function ($q) {
+src\Livewire\Users\Traits\HasUserCommon.php:            return $query->where('team_id', auth()->user()->currentTeam->id);
+src\Livewire\Users\UserImport.php:                        'team_id' => $team->id,
+src\Livewire\Users\UserImport.php:                    $user->forceFill(['current_team_id' => $team->id])->save();
+src\Livewire\Users\UserImport.php:            ->when(config('laravel-crm.teams'), fn ($q) => $q->where('team_id', auth()->user()->currentTeam->id))
+src\Livewire\Users\UserEdit.php:            $this->userTeams = $this->user->crmTeams()->pluck('crm_team_user.crm_team_id')->toArray();
+src\Livewire\Users\UserCreate.php:                    'team_id' => $team->id,
+src\Livewire\Users\UserCreate.php:                    'current_team_id' => $team->id,
+src\Observers\FeatureObserver.php:                ->when($feature->team_id, fn ($q) => $q->where(function ($q) use ($feature) {
+src\Observers\FeatureObserver.php:                    $q->whereNull('team_id')->orWhere('team_id', $feature->team_id);
+src\Observers\FeatureObserver.php:                ->orderByRaw('team_id IS NULL')
+src\Observers\FeatureObserver.php:        $owners = $this->ownerRoleUsers($feature->team_id);
+src\Observers\FeatureCommentObserver.php:        foreach ($this->ownerRoleUsers($feature->team_id) as $admin) {
+src\Observers\MonitorCheckObserver.php:        if (! $check->team_id && $check->monitor) {
+src\Observers\MonitorCheckObserver.php:            $check->team_id = $check->monitor->team_id;
+src\Http\Controllers\Jetstream\CurrentTeamController.php:        $team = Jetstream::newTeamModel()->findOrFail($request->team_id);
+src\Http\Controllers\RoleController.php:                'team_id' => auth()->user()->currentTeam->id,
+src\Models\Team.php:        return $this->belongsToMany(User::class, 'crm_team_user', 'crm_team_id', 'user_id');
+src\Livewire\Settings\Permissions\RoleIndex.php:                return $query->where('team_id', auth()->user()->currentTeam->id);
+src\Livewire\Settings\Permissions\RoleCreate.php:                'team_id' => auth()->user()->currentTeam->id,
+src\Http\Controllers\UserController.php:                    'team_id' => $team->id,
+src\Http\Controllers\UserController.php:                    'current_team_id' => $team->id,
+src\Services\SmsCampaignService.php:                        'team_id' => $campaign->team_id,
+database\migrations\add_global_to_laravel_crm_settings_table.php.stub:            $table->boolean('global')->after('team_id')->default(false);
+database\migrations\add_label_type_to_laravel_crm_fields_table.php.stub:             ])->after('team_id')->default('text');
+src\Observers\TeamObserver.php:                ->whereNull('team_id')
+src\Observers\TeamObserver.php:                    'team_id' => $team->id,
+src\Observers\TeamObserver.php:                    'team_id' => $team->id,
+src\Observers\TeamObserver.php:                'team_id' => $team->id,
+src\Observers\TeamObserver.php:                    'team_id' => $team->id,
+src\Observers\TeamObserver.php:                ->whereNull('team_id')
+src\Observers\TeamObserver.php:                    'team_id' => $team->id,
+src\Observers\TeamObserver.php:                ->whereNull('team_id')
+src\Observers\TeamObserver.php:                    'team_id' => $team->id,
+src\Observers\TeamObserver.php:                ->whereNull('team_id')
+src\Observers\TeamObserver.php:                    'team_id' => $team->id,
+src\Observers\TeamObserver.php:                ->whereNull('team_id')
+src\Observers\TeamObserver.php:                    'team_id' => $team->id,
+src\Observers\TeamObserver.php:                ->whereNull('team_id')
+src\Observers\TeamObserver.php:                    'team_id' => $team->id,
+src\Observers\TeamObserver.php:                ->whereNull('team_id')
+src\Observers\TeamObserver.php:                    'team_id' => $team->id,
+src\Observers\XeroTokenObserver.php:            $xeroToken->team_id = auth()->user()->currentTeam->id;
+database\migrations\add_pipeline_to_laravel_crm_models_table.php.stub:            $table->foreignIdFor(\VentureDrake\LaravelCrm\Models\Pipeline::class)->nullable()->after('team_id');
+database\migrations\add_pipeline_to_laravel_crm_models_table.php.stub:            $table->foreignIdFor(\VentureDrake\LaravelCrm\Models\Pipeline::class)->nullable()->after('team_id');
+database\migrations\add_pipeline_to_laravel_crm_models_table.php.stub:            $table->foreignIdFor(\VentureDrake\LaravelCrm\Models\Pipeline::class)->nullable()->after('team_id');
+database\migrations\add_pipeline_to_laravel_crm_models_table.php.stub:            $table->foreignIdFor(\VentureDrake\LaravelCrm\Models\Pipeline::class)->nullable()->after('team_id');
+database\migrations\add_pipeline_to_laravel_crm_models_table.php.stub:            $table->foreignIdFor(\VentureDrake\LaravelCrm\Models\Pipeline::class)->nullable()->after('team_id');
+database\migrations\add_pipeline_to_laravel_crm_models_table.php.stub:            $table->foreignIdFor(\VentureDrake\LaravelCrm\Models\Pipeline::class)->nullable()->after('team_id');
+database\migrations\add_pipeline_to_laravel_crm_models_table.php.stub:            $table->foreignIdFor(\VentureDrake\LaravelCrm\Models\Pipeline::class)->nullable()->after('team_id');
+database\migrations\add_team_id_to_laravel_crm_tables.php.stub:            $table->unsignedBigInteger('team_id')->after('id')->index()->nullable();
+database\migrations\add_team_id_to_laravel_crm_tables.php.stub:            $table->unsignedBigInteger('team_id')->after('external_id')->index()->nullable();
+database\migrations\add_team_id_to_laravel_crm_tables.php.stub:            $table->unsignedBigInteger('team_id')->after('external_id')->index()->nullable();
+database\migrations\add_team_id_to_laravel_crm_tables.php.stub:            $table->unsignedBigInteger('team_id')->after('external_id')->index()->nullable();
+database\migrations\add_team_id_to_laravel_crm_tables.php.stub:            $table->unsignedBigInteger('team_id')->after('external_id')->index()->nullable();
+database\migrations\add_team_id_to_laravel_crm_tables.php.stub:            $table->unsignedBigInteger('team_id')->after('external_id')->index()->nullable();
+database\migrations\add_team_id_to_laravel_crm_tables.php.stub:            $table->unsignedBigInteger('team_id')->after('external_id')->index()->nullable();
+database\migrations\add_team_id_to_laravel_crm_tables.php.stub:            $table->unsignedBigInteger('team_id')->after('external_id')->index()->nullable();
+database\migrations\add_team_id_to_laravel_crm_tables.php.stub:            $table->unsignedBigInteger('team_id')->after('external_id')->index()->nullable();
+database\migrations\add_team_id_to_laravel_crm_tables.php.stub:            $table->unsignedBigInteger('team_id')->after('external_id')->index()->nullable();
+database\migrations\add_team_id_to_laravel_crm_tables.php.stub:            $table->unsignedBigInteger('team_id')->after('external_id')->index()->nullable();
+database\migrations\add_team_id_to_laravel_crm_tables.php.stub:            $table->unsignedBigInteger('team_id')->after('external_id')->index()->nullable();
+database\migrations\add_team_id_to_laravel_crm_tables.php.stub:            $table->unsignedBigInteger('team_id')->after('external_id')->index()->nullable();
+database\migrations\add_team_id_to_laravel_crm_tables.php.stub:            $table->unsignedBigInteger('team_id')->after('id')->index()->nullable();
+database\migrations\add_team_id_to_laravel_crm_tables.php.stub:            $table->unsignedBigInteger('team_id')->after('external_id')->index()->nullable();
+database\migrations\add_team_id_to_laravel_crm_tables.php.stub:            $table->unsignedBigInteger('team_id')->after('external_id')->index()->nullable();
+database\migrations\add_team_id_to_laravel_crm_tables.php.stub:            $table->dropColumn(['team_id']);
+database\migrations\add_team_id_to_laravel_crm_tables.php.stub:            $table->dropColumn(['team_id']);
+database\migrations\add_team_id_to_laravel_crm_tables.php.stub:            $table->dropColumn(['team_id']);
+database\migrations\add_team_id_to_laravel_crm_tables.php.stub:            $table->dropColumn(['team_id']);
+database\migrations\add_team_id_to_laravel_crm_tables.php.stub:            $table->dropColumn(['team_id']);
+database\migrations\add_team_id_to_laravel_crm_tables.php.stub:            $table->dropColumn(['team_id']);
+database\migrations\add_team_id_to_laravel_crm_tables.php.stub:            $table->dropColumn(['team_id']);
+database\migrations\add_team_id_to_laravel_crm_tables.php.stub:            $table->dropColumn(['team_id']);
+database\migrations\add_team_id_to_laravel_crm_tables.php.stub:            $table->dropColumn(['team_id']);
+database\migrations\add_team_id_to_laravel_crm_tables.php.stub:            $table->dropColumn(['team_id']);
+database\migrations\add_team_id_to_laravel_crm_tables.php.stub:            $table->dropColumn(['team_id']);
+database\migrations\add_team_id_to_laravel_crm_tables.php.stub:            $table->dropColumn(['team_id']);
+database\migrations\add_team_id_to_laravel_crm_tables.php.stub:            $table->dropColumn(['team_id']);
+database\migrations\add_team_id_to_laravel_crm_tables.php.stub:            $table->dropColumn(['team_id']);
+database\migrations\add_team_id_to_laravel_crm_tables.php.stub:            $table->dropColumn(['team_id']);
+database\migrations\add_team_id_to_laravel_crm_tables.php.stub:            $table->dropColumn(['team_id']);
+database\migrations\add_team_id_to_laravel_crm_usage_requests_table.php.stub:            $table->unsignedBigInteger('team_id')->after('id')->nullable();
+database\migrations\add_team_id_to_laravel_crm_usage_requests_table.php.stub:            $table->dropColumn(['team_id']);
+database\migrations\add_team_id_to_xero_tokens_table.php.stub:            $table->unsignedBigInteger('team_id')->after('id')->nullable();
+database\migrations\add_team_id_to_xero_tokens_table.php.stub:            $table->dropColumn(['team_id']);
+database\migrations\add_user_to_laravel_crm_settings_table.php.stub:            $table->unsignedBigInteger('user_id')->nullable()->after('team_id');
+database\migrations\create_laravel_crm_address_types_table.php.stub:            $table->unsignedBigInteger('team_id')->index()->nullable();
+database\migrations\create_laravel_crm_address_types_table.php.stub:            $table->unsignedBigInteger('address_type_id')->after('team_id')->index()->nullable();
+database\migrations\create_laravel_crm_calls_table.php.stub:            $table->unsignedBigInteger('team_id')->index()->nullable();
+database\migrations\create_laravel_crm_chat_tables.php.stub:            $table->unsignedBigInteger('team_id')->index()->nullable();
+database\migrations\create_laravel_crm_chat_tables.php.stub:            $table->unsignedBigInteger('team_id')->index()->nullable();
+database\migrations\create_laravel_crm_chat_tables.php.stub:            $table->unsignedBigInteger('team_id')->index()->nullable();
+database\migrations\create_laravel_crm_chat_tables.php.stub:            $table->unsignedBigInteger('team_id')->index()->nullable();
+database\migrations\create_laravel_crm_chat_visitor_page_views_table.php.stub:            $table->unsignedBigInteger('team_id')->index()->nullable();
+database\migrations\create_laravel_crm_contacts_table.php.stub:            $table->unsignedBigInteger('team_id')->index()->nullable();
+database\migrations\create_laravel_crm_contact_types_table.php.stub:            $table->unsignedBigInteger('team_id')->index()->nullable();
+database\migrations\create_laravel_crm_customers_table.php.stub:            $table->unsignedBigInteger('team_id')->index()->nullable();
+database\migrations\create_laravel_crm_deal_products_table.php.stub:            $table->unsignedBigInteger('team_id')->index()->nullable();
+database\migrations\create_laravel_crm_deliveries_table.php.stub:            $table->unsignedBigInteger('team_id')->index()->nullable();
+database\migrations\create_laravel_crm_delivery_products_table.php.stub:            $table->unsignedBigInteger('team_id')->index()->nullable();
+database\migrations\create_laravel_crm_email_campaigns_table.php.stub:            $table->unsignedBigInteger('team_id')->index()->nullable();
+database\migrations\create_laravel_crm_email_campaign_recipients_table.php.stub:            $table->unsignedBigInteger('team_id')->index()->nullable();
+database\migrations\create_laravel_crm_email_templates_table.php.stub:            $table->unsignedBigInteger('team_id')->index()->nullable();
+database\migrations\create_laravel_crm_features_table.php.stub:            $table->unsignedBigInteger('team_id')->index()->nullable();
+database\migrations\create_laravel_crm_feature_comments_table.php.stub:            $table->unsignedBigInteger('team_id')->index()->nullable();
+database\migrations\create_laravel_crm_feature_statuses_table.php.stub:            $table->unsignedBigInteger('team_id')->index()->nullable();
+database\migrations\create_laravel_crm_feature_views_table.php.stub:            $table->unsignedBigInteger('team_id')->nullable()->index();
+database\migrations\create_laravel_crm_feature_votes_table.php.stub:            $table->unsignedBigInteger('team_id')->index()->nullable();
+database\migrations\create_laravel_crm_field_groups_table.php.stub:            $table->unsignedBigInteger('team_id')->index()->nullable();
+database\migrations\create_laravel_crm_field_groups_table.php.stub:             $table->unsignedBigInteger('field_group_id')->index()->after('team_id');
+database\migrations\create_laravel_crm_field_models_table.php.stub:            $table->unsignedBigInteger('team_id')->index()->nullable();
+database\migrations\create_laravel_crm_field_options_table.php.stub:            $table->unsignedBigInteger('team_id')->index()->nullable();
+database\migrations\create_laravel_crm_files_table.php.stub:            $table->unsignedBigInteger('team_id')->index()->nullable();
+database\migrations\create_laravel_crm_industries_table.php.stub:            $table->unsignedBigInteger('team_id')->index()->nullable();
+database\migrations\create_laravel_crm_invoices_table.php.stub:            $table->unsignedBigInteger('team_id')->index()->nullable();
+database\migrations\create_laravel_crm_invoice_lines_table.php.stub:            $table->unsignedBigInteger('team_id')->index()->nullable();
+database\migrations\create_laravel_crm_lunches_table.php.stub:            $table->unsignedBigInteger('team_id')->index()->nullable();
+database\migrations\create_laravel_crm_meetings_table.php.stub:            $table->unsignedBigInteger('team_id')->index()->nullable();
+database\migrations\create_laravel_crm_monitors_table.php.stub:            $table->unsignedBigInteger('team_id')->index()->nullable();
+database\migrations\create_laravel_crm_monitors_table.php.stub:            $table->index(['team_id', 'last_checked_at']);
+database\migrations\create_laravel_crm_monitor_checks_table.php.stub:            $table->unsignedBigInteger('team_id')->index()->nullable();
+database\migrations\create_laravel_crm_orders_table.php.stub:            $table->unsignedBigInteger('team_id')->index()->nullable();
+database\migrations\create_laravel_crm_order_products_table.php.stub:            $table->unsignedBigInteger('team_id')->index()->nullable();
+database\migrations\create_laravel_crm_organization_types_table.php.stub:            $table->unsignedBigInteger('team_id')->index()->nullable();
+database\migrations\create_laravel_crm_pipelines_table.php.stub:            $table->unsignedBigInteger('team_id')->index()->nullable();
+database\migrations\create_laravel_crm_pipeline_stages_table.php.stub:            $table->unsignedBigInteger('team_id')->index()->nullable();
+database\migrations\create_laravel_crm_pipeline_stage_probabilities_table.php.stub:            $table->unsignedBigInteger('team_id')->index()->nullable();
+database\migrations\create_laravel_crm_products_table.php.stub:            $table->unsignedBigInteger('team_id')->index()->nullable();
+database\migrations\create_laravel_crm_product_categories_table.php.stub:            $table->unsignedBigInteger('team_id')->index()->nullable();
+database\migrations\create_laravel_crm_product_prices_table.php.stub:            $table->unsignedBigInteger('team_id')->index()->nullable();
+database\migrations\create_laravel_crm_product_variations_table.php.stub:            $table->unsignedBigInteger('team_id')->index()->nullable();
+database\migrations\create_laravel_crm_purchase_orders_table.php.stub:            $table->unsignedBigInteger('team_id')->index()->nullable();
+database\migrations\create_laravel_crm_purchase_order_lines_table.php.stub:               $table->unsignedBigInteger('team_id')->index()->nullable();
+database\migrations\create_laravel_crm_quotes_table.php.stub:            $table->unsignedBigInteger('team_id')->index()->nullable();
+database\migrations\create_laravel_crm_quote_products_table.php.stub:            $table->unsignedBigInteger('team_id')->index()->nullable();
+database\migrations\create_laravel_crm_sms_campaigns_table.php.stub:            $table->unsignedBigInteger('team_id')->index()->nullable();
+database\migrations\create_laravel_crm_sms_campaign_recipients_table.php.stub:            $table->unsignedBigInteger('team_id')->index()->nullable();
+database\migrations\create_laravel_crm_sms_templates_table.php.stub:            $table->unsignedBigInteger('team_id')->index()->nullable();
+database\migrations\create_laravel_crm_tables.php.stub:            $table->unsignedBigInteger('crm_team_id');
+database\migrations\create_laravel_crm_tables.php.stub:            $table->foreign('crm_team_id')->references('id')->on('crm_teams');
+database\migrations\create_laravel_crm_tables.php.stub:            $table->unique(['crm_team_id', 'user_id']);
+database\migrations\create_laravel_crm_tables.php.stub:            $table->unsignedBigInteger('crm_team_id');
+database\migrations\create_laravel_crm_tables.php.stub:            $table->foreign('crm_team_id')->references('id')->on('crm_teams');
+database\migrations\create_laravel_crm_tables.php.stub:            $table->unique(['crm_team_id', 'email']);
+database\migrations\create_laravel_crm_tables.php.stub:        if (! Schema::hasColumn('users', 'current_crm_team_id'))
+database\migrations\create_laravel_crm_tables.php.stub:                $table->unsignedBigInteger('current_crm_team_id')->nullable()->index();
+database\migrations\create_laravel_crm_tables.php.stub:                $table->foreign('current_crm_team_id')->references('id')->on('crm_teams');
+database\migrations\create_laravel_crm_tasks_table.php.stub:            $table->unsignedBigInteger('team_id')->index()->nullable();
+database\migrations\create_laravel_crm_tax_rates_table.php.stub:            $table->unsignedBigInteger('team_id')->index()->nullable();
+database\migrations\create_laravel_crm_xero_contacts_table.php.stub:            $table->unsignedBigInteger('team_id')->index()->nullable();
+database\migrations\create_laravel_crm_xero_invoices_table.php.stub:            $table->unsignedBigInteger('team_id')->index()->nullable();
+database\migrations\create_laravel_crm_xero_items_table.php.stub:            $table->unsignedBigInteger('team_id')->index()->nullable();
+database\migrations\create_laravel_crm_xero_people_table.php.stub:            $table->unsignedBigInteger('team_id')->index()->nullable();
+database\migrations\create_laravel_crm_xero_purchase_orders_table.php.stub:            $table->unsignedBigInteger('team_id')->index()->nullable();

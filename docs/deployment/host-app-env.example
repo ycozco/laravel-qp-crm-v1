@@ -1,0 +1,40 @@
+# Copy these values into the future Laravel host app .env.
+# This file is documentation only; the package itself does not read .env files
+# until it is installed inside a Laravel application.
+
+APP_NAME="CRM Multitenant"
+APP_ENV=local
+APP_KEY=
+APP_DEBUG=true
+APP_URL=http://localhost
+
+DB_CONNECTION=mysql
+DB_HOST=mysql
+DB_PORT=3306
+DB_DATABASE=crm_multitenant
+DB_USERNAME=crm_multitenant
+DB_PASSWORD=crm_multitenant
+
+QUEUE_CONNECTION=database
+CACHE_STORE=database
+SESSION_DRIVER=database
+
+LARAVEL_CRM_OWNER=owner@example.com
+LARAVEL_CRM_TEAMS=true
+LARAVEL_CRM_ROUTE_PREFIX=crm
+LARAVEL_CRM_ROUTE_SUBDOMAIN=
+LARAVEL_CRM_DB_TABLE_PREFIX=crm_
+LARAVEL_CRM_USER_INTERFACE=true
+
+# Meta WhatsApp global app config.
+# These are NOT per-tenant phone access tokens.
+META_WHATSAPP_ENABLED=false
+META_WHATSAPP_GRAPH_VERSION=v20.0
+META_WHATSAPP_APP_ID=
+META_WHATSAPP_APP_SECRET=
+META_WHATSAPP_WEBHOOK_VERIFY_TOKEN=
+META_WHATSAPP_WEBHOOK_PATH=/webhooks/meta/whatsapp
+
+# Future tenant WhatsApp access tokens must be stored encrypted in DB:
+# saas_tenant_integrations.credentials_json
+# Lookup tenant by phone_number_id or waba_id from the webhook payload.

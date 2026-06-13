@@ -1,0 +1,159 @@
+<div class="grid lg:grid-cols-10 gap-5">
+    <div class="lg:col-span-2">
+        @include('laravel-crm::layouts.partials.nav-settings')
+    </div>
+    <div class="lg:col-span-8">
+        <div class="crm-content">
+            <x-mary-header title="Xero" class="mb-5" progress-indicator></x-mary-header>
+            <x-mary-card shadow separator>
+                <div class="grid gap-y-5">
+                    <p>Connect to xero accounting to sync contacts, products, quotes & generate invoices.</p>
+                    <hr />
+                    @if(isset($tenantName))
+                        <div role="alert" class="alert alert-info">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" class="h-6 w-6 shrink-0 stroke-current">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                            </svg>
+                            <span>You are connected to the Xero organization <strong>{{ $tenantName }}</strong>.</span>
+                        </div>
+                        <hr />
+                        <x-mary-button label="Disconnect Xero" link="{{ route('laravel-crm.integrations.xero.disconnect')  }}" class="btn btn-success btn-outline" />
+                        <hr />
+                        <h3>Settings</h3>
+                        <form wire:submit.prevent="updateSettings">
+                            <x-mary-toggle label="Sync Contacts" wire:model="setting_contacts" right />
+                            <x-mary-toggle label="Sync Products" wire:model="setting_products" right />
+                           {{-- <x-mary-toggle label="Create & Update Quotes" wire:model="setting_quotes" right />--}}
+                            <x-mary-toggle label="Create & Update Invoices" wire:model="setting_invoices" right />
+                            <hr />
+                            <div class="form-group">
+                                <button type="submit" class="btn btn-primary">{{ ucwords(__('laravel-crm::lang.save_changes')) }}</button>
+                            </div>
+                        </form>
+                    @else
+                        <x-mary-button label="Connect to Xero" link="{{ route('laravel-crm.integrations.xero.connect') }}" class="btn btn-outline" />
+                    @endif
+                </div>
+            </x-mary-card>
+        </div>
+    </div>
+</div>
+
+@push('livewire-js')
+    <script>
+        $(document).ready(function () {
+            $('#setting_contacts').change(function() {
+                @this.set('setting_contacts', $(this).prop('checked'));
+            })
+
+            $('#setting_products').change(function() {
+                @this.set('setting_products', $(this).prop('checked'));
+            })
+
+            $('#setting_quotes').change(function() {
+                @this.set('setting_quotes', $(this).prop('checked'));
+            })
+
+            $('#setting_invoices').change(function() {
+                @this.set('setting_invoices', $(this).prop('checked'));
+            })
+        });
+    </script>
+@endpush
+
+{{--
+<div>
+    <div class="container-fluid pl-0">
+        <div class="row">
+            <div class="col col-md-2">
+                <div class="card">
+                    <div class="card-body py-3 px-2">
+                        @include('laravel-crm::layouts.partials.nav-settings')
+                    </div>
+                </div>
+            </div>
+            <div class="col col-md-10">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="mb-0">Xero</h3>
+                    </div>
+                    <div class="card-body">
+                        <p class="border-bottom mb-3 pb-3">Connect to xero accounting to sync contacts, products, quotes & generate invoices.</p>
+                        @if(isset($tenantName))
+                            <div class="alert alert-info">
+                                You are connected to the Xero organization <strong>{{ $tenantName }}</strong>.
+                            </div>
+                            <hr />
+                            <a class="btn btn-success" href="{{ route('laravel-crm.integrations.xero.disconnect') }}">
+                                Disconnect xero
+                            </a>
+                            <hr />
+                            <h4 class="mb-3">Settings</h4>
+                            <form wire:submit.prevent="updateSettings">
+                                <table class="table mb-0 card-table table-hover">
+                                    <tbody>
+                                    <tr>
+                                        <td>Sync Contacts</td>
+                                        <td wire:ignore class="disable-link text-right">
+                                            <input wire:model="setting_contacts" id="setting_contacts" type="checkbox" name="setting_contacts" data-toggle="toggle" data-size="sm" data-on="Yes" data-off="No" data-onstyle="success" data-offstyle="danger">
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>Sync Products</td>
+                                        <td wire:ignore class="disable-link text-right">
+                                            <input wire:model="setting_products" id="setting_products" type="checkbox" data-toggle="toggle" data-size="sm" data-on="Yes" data-off="No" data-onstyle="success" data-offstyle="danger">
+                                        </td>
+                                    </tr>
+                                    --}}
+{{--<tr>
+                                        <td>Create & Update Quotes</td>
+                                        <td wire:ignore class="disable-link text-right">
+                                            <input wire:model="setting_quotes" id="setting_quotes" type="checkbox" name="setting_quotes" data-toggle="toggle" data-size="sm" data-on="Yes" data-off="No" data-onstyle="success" data-offstyle="danger">
+                                        </td>
+                                    </tr>--}}{{--
+
+                                    <tr>
+                                        <td>Create & Update Invoices</td>
+                                        <td wire:ignore class="disable-link text-right">
+                                            <input wire:model="setting_invoices" id="setting_invoices" type="checkbox" data-toggle="toggle" data-size="sm" data-on="Yes" data-off="No" data-onstyle="success" data-offstyle="danger">
+                                        </td>
+                                    </tr>
+                                    </tbody>
+                                </table>
+                                <hr />
+                                <div class="form-group">
+                                    <button type="submit" class="btn btn-primary">{{ ucwords(__('laravel-crm::lang.save_changes')) }}</button>
+                                </div>
+                            </form>
+                        @else
+                            <a type="button" class="btn btn-outline-secondary" href="{{ route('laravel-crm.integrations.xero.connect') }}">
+                                Connect to xero
+                            </a>
+                        @endif
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    @push('livewire-js')
+        <script>
+            $(document).ready(function () {
+                $('#setting_contacts').change(function() {
+                    @this.set('setting_contacts', $(this).prop('checked'));
+                })
+
+                $('#setting_products').change(function() {
+                    @this.set('setting_products', $(this).prop('checked'));
+                })
+
+                $('#setting_quotes').change(function() {
+                    @this.set('setting_quotes', $(this).prop('checked'));
+                })
+
+                $('#setting_invoices').change(function() {
+                    @this.set('setting_invoices', $(this).prop('checked'));
+                })
+            });
+        </script>
+    @endpush
+</div>--}}

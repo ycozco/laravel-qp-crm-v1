@@ -1,0 +1,77 @@
+<?php
+
+namespace VentureDrake\LaravelCrm\Models;
+
+use Illuminate\Database\Eloquent\SoftDeletes;
+use VentureDrake\LaravelCrm\Traits\BelongsToTeams;
+use VentureDrake\LaravelCrm\Traits\HasCrmActivities;
+use VentureDrake\LaravelCrm\Traits\HasCrmFields;
+use VentureDrake\LaravelCrm\Traits\HasCrmUserRelations;
+use VentureDrake\LaravelCrm\Traits\HasEncryptableFields;
+use VentureDrake\LaravelCrm\Traits\SearchFilters;
+
+class Customer extends Model
+{
+    use BelongsToTeams;
+    use HasCrmActivities;
+    use HasCrmFields;
+    use HasCrmUserRelations;
+    use HasEncryptableFields;
+    use SearchFilters;
+    use SoftDeletes;
+
+    protected $guarded = ['id'];
+
+    protected $encryptable = [
+        'name',
+    ];
+
+    protected $searchable = [
+        'name',
+    ];
+
+    protected $filterable = [
+        'user_owner_id',
+        'labels.id',
+    ];
+
+    public function getSearchable()
+    {
+        return $this->searchable;
+    }
+
+    public function getTable()
+    {
+        return config('laravel-crm.db_table_prefix').'customers';
+    }
+
+    public function getNameAttribute($value)
+    {
+        if ($value) {
+            return $value;
+        } else {
+            return $this->customerable->name ?? null;
+        }
+    }
+
+    /**
+     * Get all of the owning customerable models.
+     */
+    public function customerable()
+    {
+        return $this->morphTo();
+    }
+
+    /**
+     * Get all of the labels for the person.
+     */
+    public function labels()
+    {
+        return $this->morphToMany(Label::class, config('laravel-crm.db_table_prefix').'labelable');
+    }
+
+    public function contacts()
+    {
+        return $this->morphMany(Contact::class, 'contactable');
+    }
+}

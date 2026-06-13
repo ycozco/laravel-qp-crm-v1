@@ -1,0 +1,108 @@
+<?php
+
+namespace VentureDrake\LaravelCrm\Models;
+
+use App\User;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
+use VentureDrake\LaravelCrm\Traits\BelongsToTeams;
+use VentureDrake\LaravelCrm\Traits\HasCrmActivities;
+use VentureDrake\LaravelCrm\Traits\HasGlobalSettings;
+use VentureDrake\LaravelCrm\Traits\SearchFilters;
+
+class Delivery extends Model
+{
+    use BelongsToTeams;
+    use HasCrmActivities;
+    use HasGlobalSettings;
+    use SearchFilters;
+    use SoftDeletes;
+
+    protected $guarded = ['id'];
+
+    protected $casts = [
+        'delivery_expected' => 'datetime',
+        'delivered_on' => 'datetime',
+    ];
+
+    protected $searchable = [
+        'reference',
+        'delivery_id',
+        'person.first_name',
+        'person.middle_name',
+        'person.last_name',
+        'person.maiden_name',
+        'organization.name',
+    ];
+
+    protected $filterable = [
+        'user_owner_id',
+    ];
+
+    public function getSearchable()
+    {
+        return $this->searchable;
+    }
+
+    public function getTable()
+    {
+        return config('laravel-crm.db_table_prefix').'deliveries';
+    }
+
+    public function getTitleAttribute()
+    {
+        if ($this->order) {
+            return money($this->order->total, $this->order->currency).' - '.($this->order->client->name ?? $this->order->organization->name ?? $this->order->organization->person->name ?? null);
+        }
+    }
+
+    public function order()
+    {
+        return $this->belongsTo(Order::class);
+    }
+
+    public function deliveryProducts()
+    {
+        return $this->hasMany(DeliveryProduct::class);
+    }
+
+    public function createdByUser()
+    {
+        return $this->belongsTo(User::class, 'user_created_id');
+    }
+
+    public function updatedByUser()
+    {
+        return $this->belongsTo(User::class, 'user_updated_id');
+    }
+
+    public function deletedByUser()
+    {
+        return $this->belongsTo(User::class, 'user_deleted_id');
+    }
+
+    public function restoredByUser()
+    {
+        return $this->belongsTo(User::class, 'user_restored_id');
+    }
+
+    public function ownerUser()
+    {
+        return $this->belongsTo(User::class, 'user_owner_id');
+    }
+
+    public function assignedToUser()
+    {
+        return $this->belongsTo(User::class, 'user_assigned_id');
+    }
+
+    public function addresses()
+    {
+        return $this->morphMany(Address::class, 'addressable');
+    }
+
+    public function getShippingAddress()
+    {
+        return $this->addresses()->where('address_type_id', 6)->first();
+    }
+}

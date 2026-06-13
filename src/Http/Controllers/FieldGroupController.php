@@ -1,0 +1,108 @@
+<?php
+
+namespace VentureDrake\LaravelCrm\Http\Controllers;
+
+use Illuminate\Http\Request;
+use Illuminate\Http\Response;
+use VentureDrake\LaravelCrm\Http\Requests\StoreFieldGroupRequest;
+use VentureDrake\LaravelCrm\Http\Requests\UpdateFieldGroupRequest;
+use VentureDrake\LaravelCrm\Models\FieldGroup;
+
+class FieldGroupController extends Controller
+{
+    /**
+     * Display a listing of the resource.
+     *
+     * @return Response
+     */
+    public function index()
+    {
+        return view('laravel-crm::settings.custom-field-groups.index');
+    }
+
+    /**
+     * Show the form for creating a new resource.
+     *
+     * @return Response
+     */
+    public function create()
+    {
+        return view('laravel-crm::settings.custom-field-groups.create');
+    }
+
+    /**
+     * Store a newly created resource in storage.
+     *
+     * @param  Request  $request
+     * @return Response
+     */
+    public function store(StoreFieldGroupRequest $request)
+    {
+        FieldGroup::create([
+            'name' => $request->name,
+        ]);
+
+        flash()->success(ucfirst(trans('laravel-crm::lang.field_group_stored')));
+
+        return redirect(route('laravel-crm.field-groups.index'));
+    }
+
+    /**
+     * Display the specified resource.
+     *
+     * @param  int  $id
+     * @return Response
+     */
+    public function show(FieldGroup $fieldGroup)
+    {
+        return view('laravel-crm::settings.custom-field-groups.show', [
+            'fieldGroup' => $fieldGroup,
+        ]);
+    }
+
+    /**
+     * Show the form for editing the specified resource.
+     *
+     * @param  int  $id
+     * @return Response
+     */
+    public function edit(FieldGroup $fieldGroup)
+    {
+        return view('laravel-crm::settings.custom-field-groups.edit', [
+            'fieldGroup' => $fieldGroup,
+        ]);
+    }
+
+    /**
+     * Update the specified resource in storage.
+     *
+     * @param  Request  $request
+     * @param  int  $id
+     * @return Response
+     */
+    public function update(UpdateFieldGroupRequest $request, FieldGroup $fieldGroup)
+    {
+        $fieldGroup->update([
+            'name' => $request->name,
+        ]);
+
+        flash()->success(ucfirst(trans('laravel-crm::lang.field_group_updated')));
+
+        return redirect(route('laravel-crm.field-groups.show', $fieldGroup));
+    }
+
+    /**
+     * Remove the specified resource from storage.
+     *
+     * @param  int  $id
+     * @return Response
+     */
+    public function destroy(FieldGroup $fieldGroup)
+    {
+        $fieldGroup->delete();
+
+        flash()->success(ucfirst(trans('laravel-crm::lang.field_group_deleted')));
+
+        return redirect(route('laravel-crm.field-groups.index'));
+    }
+}

@@ -1,0 +1,119 @@
+<?php
+
+namespace VentureDrake\LaravelCrm\Observers;
+
+use Ramsey\Uuid\Uuid;
+use VentureDrake\LaravelCrm\Models\Quote;
+use VentureDrake\LaravelCrm\Services\NumberGeneratorService;
+use VentureDrake\LaravelCrm\Services\SettingService;
+
+class QuoteObserver
+{
+    /**
+     * @var SettingService
+     */
+    private $settingService;
+
+    public function __construct(SettingService $settingService)
+    {
+        $this->settingService = $settingService;
+    }
+
+    /**
+     * Handle the quote "creating" event.
+     *
+     * @return void
+     */
+    public function creating(Quote $quote)
+    {
+        $quote->external_id = Uuid::uuid4()->toString();
+
+        if (! app()->runningInConsole()) {
+            $quote->user_created_id = auth()->user()->id ?? null;
+        }
+
+        $quote->number = NumberGeneratorService::next(Quote::class, 1000);
+
+        $quote->prefix = $this->settingService->get('quote_prefix');
+        $quote->quote_id = $quote->prefix.$quote->number;
+    }
+
+    /**
+     * Handle the quote "created" event.
+     *
+     * @return void
+     */
+    public function created(Quote $quote)
+    {
+        //
+    }
+
+    /**
+     * Handle the quote "updating" event.
+     *
+     * @return void
+     */
+    public function updating(Quote $quote)
+    {
+        if (! app()->runningInConsole()) {
+            $quote->user_updated_id = auth()->user()->id ?? null;
+        }
+    }
+
+    /**
+     * Handle the quote "updated" event.
+     *
+     * @return void
+     */
+    public function updated(Quote $quote)
+    {
+        //
+    }
+
+    /**
+     * Handle the quote "deleting" event.
+     *
+     * @param  \VentureDrake\LaravelCrm\Quote  $quote
+     * @return void
+     */
+    public function deleting(Quote $quote)
+    {
+        if (! app()->runningInConsole()) {
+            $quote->user_deleted_id = auth()->user()->id ?? null;
+            $quote->saveQuietly();
+        }
+    }
+
+    /**
+     * Handle the quote "deleted" event.
+     *
+     * @return void
+     */
+    public function deleted(Quote $quote)
+    {
+        //
+    }
+
+    /**
+     * Handle the quote "restored" event.
+     *
+     * @return void
+     */
+    public function restored(Quote $quote)
+    {
+        if (! app()->runningInConsole()) {
+            $quote->user_restored_id = auth()->user()->id ?? null;
+            $quote->saveQuietly();
+        }
+    }
+
+    /**
+     * Handle the quote "force deleted" event.
+     *
+     * @return void
+     */
+    public function forceDeleted(Quote $quote)
+    {
+        //
+    }
+}

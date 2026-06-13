@@ -1,0 +1,145 @@
+<?php
+
+namespace VentureDrake\LaravelCrm\Http\Controllers;
+
+use Illuminate\Http\Request;
+use Illuminate\Http\Response;
+use VentureDrake\LaravelCrm\Http\Requests\StoreFieldRequest;
+use VentureDrake\LaravelCrm\Http\Requests\UpdateFieldRequest;
+use VentureDrake\LaravelCrm\Models\Field;
+use VentureDrake\LaravelCrm\Models\FieldModel;
+
+class FieldController extends Controller
+{
+    /**
+     * Display a listing of the resource.
+     *
+     * @return Response
+     */
+    public function index()
+    {
+        return view('laravel-crm::settings.custom-fields.index');
+    }
+
+    /**
+     * Show the form for creating a new resource.
+     *
+     * @return Response
+     */
+    public function create()
+    {
+        return view('laravel-crm::settings.custom-fields.create');
+    }
+
+    /**
+     * Store a newly created resource in storage.
+     *
+     * @param  Request  $request
+     * @return Response
+     */
+    public function store(StoreFieldRequest $request)
+    {
+        $field = Field::create([
+            'type' => $request->type,
+            'name' => $request->name,
+            'field_group_id' => $request->field_group_id,
+            'required' => (($request->required == 'on') ? 1 : 0),
+            'default' => $request->default,
+        ]);
+
+        $this->syncFieldModels($request, $field);
+
+        flash()->success(ucfirst(trans('laravel-crm::lang.field_stored')));
+
+        return redirect(route('laravel-crm.fields.index'));
+    }
+
+    /**
+     * Display the specified resource.
+     *
+     * @param  int  $id
+     * @return Response
+     */
+    public function show(Field $field)
+    {
+        return view('laravel-crm::settings.custom-fields.show', [
+            'field' => $field,
+        ]);
+    }
+
+    /**
+     * Show the form for editing the specified resource.
+     *
+     * @param  int  $id
+     * @return Response
+     */
+    public function edit(Field $field)
+    {
+        return view('laravel-crm::settings.custom-fields.edit', [
+            'field' => $field,
+        ]);
+    }
+
+    /**
+     * Update the specified resource in storage.
+     *
+     * @param  Request  $request
+     * @param  int  $id
+     * @return Response
+     */
+    public function update(UpdateFieldRequest $request, Field $field)
+    {
+        $field->update([
+            'type' => $request->type,
+            'name' => $request->name,
+            'field_group_id' => $request->field_group_id,
+            'required' => (($request->required == 'on') ? 1 : 0),
+            'default' => $request->default,
+        ]);
+
+        $this->syncFieldModels($request, $field);
+
+        flash()->success(ucfirst(trans('laravel-crm::lang.field_updated')));
+
+        return redirect(route('laravel-crm.fields.show', $field));
+    }
+
+    /**
+     * Remove the specified resource from storage.
+     *
+     * @param  int  $id
+     * @return Response
+     */
+    public function destroy(Field $field)
+    {
+        foreach (FieldModel::where('field_id', $field->id)->get() as $fieldModel) {
+            $fieldModel->delete();
+        }
+
+        $field->delete();
+
+        flash()->success(ucfirst(trans('laravel-crm::lang.field_deleted')));
+
+        return redirect(route('laravel-crm.fields.index'));
+    }
+
+    protected function syncFieldModels($request, $field)
+    {
+        if ($request->field_models) {
+            foreach ($request->field_models as $model) {
+                FieldModel::firstOrCreate([
+                    'field_id' => $field->id,
+                    'model' => $model,
+                ]);
+            }
+        } else {
+            $request->field_models = [];
+        }
+
+        foreach (FieldModel::where('field_id', $field->id)->get() as $fieldModel) {
+            if (! in_array($fieldModel->model, $request->field_models)) {
+                $fieldModel->delete();
+            }
+        }
+    }
+}

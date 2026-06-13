@@ -1,0 +1,58 @@
+﻿src\Livewire\Users\UserImport.php:                    DB::table('users')
+src\Livewire\Users\UserImport.php:                    DB::table('team_user')->insert([
+src\Livewire\Users\UserCreate.php:                DB::table('team_user')->insert([
+src\Livewire\Settings\SettingEdit.php:            DB::table('teams')
+src\Observers\TeamObserver.php:            foreach (DB::table($tableNames['roles'])
+src\Observers\TeamObserver.php:                DB::table($tableNames['roles'])->updateOrInsert([
+src\Observers\TeamObserver.php:                if ($newRole = DB::table($tableNames['roles'])->where([
+src\Observers\TeamObserver.php:                    foreach (DB::table($tableNames['permissions'])
+src\Observers\TeamObserver.php:                        DB::table($tableNames['role_has_permissions'])->updateOrInsert([
+src\Observers\TeamObserver.php:                DB::table($tableNames['model_has_roles'])->insert([
+src\Observers\TeamObserver.php:            foreach (DB::table(config('laravel-crm.db_table_prefix').'labels')
+src\Observers\TeamObserver.php:                DB::table(config('laravel-crm.db_table_prefix').'labels')->insert([
+src\Observers\TeamObserver.php:            foreach (DB::table(config('laravel-crm.db_table_prefix').'organization_types')
+src\Observers\TeamObserver.php:                DB::table(config('laravel-crm.db_table_prefix').'organization_types')->insert([
+src\Observers\TeamObserver.php:            foreach (DB::table(config('laravel-crm.db_table_prefix').'address_types')
+src\Observers\TeamObserver.php:                DB::table(config('laravel-crm.db_table_prefix').'address_types')->insert([
+src\Observers\TeamObserver.php:            foreach (DB::table(config('laravel-crm.db_table_prefix').'contact_types')
+src\Observers\TeamObserver.php:                DB::table(config('laravel-crm.db_table_prefix').'contact_types')->insert([
+src\Observers\TeamObserver.php:            foreach (DB::table(config('laravel-crm.db_table_prefix').'industries')
+src\Observers\TeamObserver.php:                DB::table(config('laravel-crm.db_table_prefix').'industries')->insert([
+src\Observers\TeamObserver.php:            foreach (DB::table(config('laravel-crm.db_table_prefix').'tax_rates')
+src\Observers\TeamObserver.php:                DB::table(config('laravel-crm.db_table_prefix').'tax_rates')->insert([
+src\Services\ChatService.php:            return DB::table('users')
+src\Services\ChatService.php:            $ownerRoleId = DB::table($roleTable)
+src\Services\ChatService.php:            $userIds = DB::table($modelHasRoles)
+src\Services\ChatService.php:            $ownerRoleId = DB::table($roleTable)
+src\Services\ChatService.php:            $userIds = DB::table($modelHasRoles)
+src\Notifications\Concerns\ResolvesFeatureRecipients.php:        $query = DB::table($modelHasRoles)
+src\Console\LaravelCrmV2.php:                $count = DB::table($table)->where($column, $from)->count();
+src\Console\LaravelCrmV2.php:                    DB::table($table)->where($column, $from)->update([$column => $to]);
+src\Console\LaravelCrmPermissions.php:            foreach (DB::table('teams')->get() as $team) {
+src\Console\LaravelCrmPermissions.php:                $rolesQuery = DB::table($tableNames['roles'])
+src\Console\LaravelCrmPermissions.php:                    DB::table($tableNames['roles'])->updateOrInsert([
+src\Console\LaravelCrmPermissions.php:                    if ($newRole = DB::table($tableNames['roles'])->where([
+src\Console\LaravelCrmPermissions.php:                        foreach (DB::table($tableNames['permissions'])
+src\Console\LaravelCrmPermissions.php:                            DB::table($tableNames['role_has_permissions'])->updateOrInsert([
+src\Console\LaravelCrmOrganizationTypes.php:        foreach (DB::table('teams')->get() as $team) {
+src\Console\LaravelCrmOrganizationTypes.php:            foreach (DB::table('organization_types')
+src\Console\LaravelCrmOrganizationTypes.php:                $teamOrganizationType = DB::table('organization_types')->where([
+src\Console\LaravelCrmOrganizationTypes.php:                    DB::table('organization_types')->insert([
+src\Console\LaravelCrmLabels.php:        foreach (DB::table('teams')->get() as $team) {
+src\Console\LaravelCrmLabels.php:            foreach (DB::table('labels')
+src\Console\LaravelCrmLabels.php:                $teamLabel = DB::table('labels')->where([
+src\Console\LaravelCrmLabels.php:                    DB::table('labels')->insert([
+src\Console\LaravelCrmContactTypes.php:        foreach (DB::table('teams')->get() as $team) {
+src\Console\LaravelCrmContactTypes.php:            foreach (DB::table('contact_types')
+src\Console\LaravelCrmContactTypes.php:                $teamContactType = DB::table('contact_types')->where([
+src\Console\LaravelCrmContactTypes.php:                    DB::table('contact_types')->insert([
+src\Console\LaravelCrmInstall.php:        $roleQuery = DB::table($roleTable)
+src\Console\LaravelCrmInstall.php:        $query = DB::table($modelHasRoles)
+src\Console\LaravelCrmInstall.php:        DB::table($modelHasRoles)->insert($row);
+src\Http\Controllers\UserController.php:                DB::table('team_user')->insert([
+src\Console\LaravelCrmAddressTypes.php:        foreach (DB::table('teams')->get() as $team) {
+src\Console\LaravelCrmAddressTypes.php:            foreach (DB::table('address_types')
+src\Console\LaravelCrmAddressTypes.php:                $teamAddressType = DB::table('address_types')->where([
+src\Console\LaravelCrmAddressTypes.php:                    DB::table('address_types')->insert([
+src\Http\Controllers\SettingController.php:            DB::table('teams')
+src\Http\Middleware\LastOnlineAt.php:            DB::table('users')

@@ -1,0 +1,10 @@
+﻿tests\Unit\Api\SetApiTeamContextTest.php:use VentureDrake\LaravelCrm\Http\Middleware\SetApiTeamContext;
+tests\Unit\Api\SetApiTeamContextTest.php:    $middleware = new SetApiTeamContext;
+tests\Unit\Api\SetApiTeamContextTest.php:    $middleware = new SetApiTeamContext;
+tests\Unit\Api\SetApiTeamContextTest.php:    $middleware = new SetApiTeamContext;
+tests\Unit\Api\SetApiTeamContextTest.php:    $middleware = new SetApiTeamContext;
+tests\Feature\ApiRouteGroupTest.php:use VentureDrake\LaravelCrm\Http\Middleware\SetApiTeamContext;
+tests\Feature\ApiRouteGroupTest.php:    expect($aliases['laravel-crm.api.team'])->toBe(SetApiTeamContext::class);
+src\LaravelCrmServiceProvider.php:use VentureDrake\LaravelCrm\Http\Middleware\SetApiTeamContext;
+src\LaravelCrmServiceProvider.php:        $router->aliasMiddleware('laravel-crm.api.team', SetApiTeamContext::class);
+src\Http\Middleware\SetApiTeamContext.php:class SetApiTeamContext

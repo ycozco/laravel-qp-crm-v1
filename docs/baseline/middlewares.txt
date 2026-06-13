@@ -1,0 +1,12 @@
+﻿src\Http\Middleware\XeroTenant.php
+src\Http\Middleware\TeamsPermission.php
+src\Http\Middleware\SystemCheck.php
+src\Http\Middleware\Settings.php
+src\Http\Middleware\SetApiTeamContext.php
+src\Http\Middleware\RouteSubdomain.php
+src\Http\Middleware\LogUsage.php
+src\Http\Middleware\LastOnlineAt.php
+src\Http\Middleware\HasCrmAccess.php
+src\Http\Middleware\FormComponentsConfig.php
+src\Http\Middleware\ForceJsonResponse.php
+src\Http\Middleware\Authenticate.php

@@ -1,0 +1,3 @@
+﻿src\Http\Middleware\RouteSubdomain.php:class RouteSubdomain
+src\LaravelCrmServiceProvider.php:use VentureDrake\LaravelCrm\Http\Middleware\RouteSubdomain;
+src\LaravelCrmServiceProvider.php:            $router->pushMiddlewareToGroup('crm', RouteSubdomain::class);

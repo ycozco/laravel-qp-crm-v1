@@ -1,0 +1,106 @@
+{
+    "name": "venturedrake/laravel-crm",
+    "description": "A free open source CRM built as a package for laravel projects",
+    "keywords": [
+        "venturedrake",
+        "laravel",
+        "free crm",
+        "open source crm",
+        "CRM",
+        "laravel-crm",
+        "laravel crm",
+        "laravel crm package",
+        "contact management",
+        "contact management system",
+        "customer management",
+        "customer relationship management",
+        "lead management",
+        "sales management",
+        "crm system",
+        "crm online",
+        "crm platform"
+    ],
+    "homepage": "https://github.com/venturedrake/laravel-crm",
+    "license": "MIT",
+    "type": "library",
+    "authors": [
+        {
+            "name": "Andrew Drake",
+            "email": "andrew@venturedrake.com",
+            "homepage": "https://venturedrake.com",
+            "role": "Developer"
+        }
+    ],
+    "minimum-stability": "stable",
+    "prefer-stable": true,
+    "require": {
+        "php": "^8.2",
+        "barryvdh/laravel-dompdf": "^3.1",
+        "cknow/laravel-money": "^7.0|^8.0",
+        "codeat3/blade-forkawesome": "^1.11",
+        "dcblogdev/laravel-xero": "^1.1.3",
+        "doctrine/dbal": "^3.9|^4.0",
+        "guzzlehttp/guzzle": "^6.0|^7.0",
+        "illuminate/support": "^11.0|^12.0|^13.0",
+        "laravel/sanctum": "^4.0",
+        "livewire/livewire": "^3.0|^4.0",
+        "mallardduck/blade-boxicons": "^2.4",
+        "mpdf/mpdf": "^8.0",
+        "owenvoke/blade-fontawesome": "^2.8|^3.0",
+        "php-flasher/flasher-laravel": "^2.3",
+        "rinvex/countries": "^8.1|^9.0",
+        "robsontenorio/mary": "^1.0|^2.0",
+        "spatie/laravel-permission": "^6.0"
+    },
+    "require-dev": {
+        "laravel/boost": "^2.3",
+        "laravel/pint": "^1.10",
+        "orchestra/testbench": "^9.0|^10.0",
+        "pestphp/pest": "^2.0",
+        "pestphp/pest-plugin-laravel": "^2.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "VentureDrake\\LaravelCrm\\" : "src/",
+            "VentureDrake\\LaravelCrm\\Database\\Seeders\\" : "database/seeders"
+        },
+        "files": [
+            "src/Http/Helpers/SelectOptions.php",
+            "src/Http/Helpers/PersonName.php",
+            "src/Http/Helpers/AddressLine.php",
+            "src/Http/Helpers/AutoComplete.php",
+            "src/Http/Helpers/CheckAmount.php",
+            "src/Http/Helpers/Validate.php",
+            "src/Http/Helpers/PublicProperties.php",
+            "src/Http/Helpers/ConvertCase.php"
+        ]
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "VentureDrake\\LaravelCrm\\Tests\\" : "tests"
+        }
+    },
+    "scripts": {
+        "testbench" : "vendor/bin/testbench",
+        "test": "vendor/bin/pest --colors=always",
+        "test-coverage": "vendor/bin/pest --coverage-html coverage",
+        "format": "vendor/bin/pint -v",
+        "format-test": "vendor/bin/pint -v --test"
+    },
+    "config": {
+        "sort-packages": true,
+        "allow-plugins": {
+            "pestphp/pest-plugin": true
+        }
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "VentureDrake\\LaravelCrm\\LaravelCrmServiceProvider"
+            ],
+            "aliases": {
+                "LaravelCrm": "VentureDrake\\LaravelCrm\\Facades\\LaravelCrmFacade"
+            }
+        }
+    }
+}

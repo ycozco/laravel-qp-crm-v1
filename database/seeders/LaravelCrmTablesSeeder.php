@@ -1,0 +1,780 @@
+<?php
+
+namespace VentureDrake\LaravelCrm\Database\Seeders;
+
+use Illuminate\Database\Seeder;
+use Ramsey\Uuid\Uuid;
+use Spatie\Permission\Models\Permission;
+use Spatie\Permission\Models\Role;
+use Spatie\Permission\PermissionRegistrar;
+use VentureDrake\LaravelCrm\Models\AddressType;
+use VentureDrake\LaravelCrm\Models\ContactType;
+use VentureDrake\LaravelCrm\Models\FeatureStatus;
+use VentureDrake\LaravelCrm\Models\Label;
+use VentureDrake\LaravelCrm\Models\Lead;
+use VentureDrake\LaravelCrm\Models\LeadStatus;
+use VentureDrake\LaravelCrm\Models\OrganizationType;
+use VentureDrake\LaravelCrm\Models\Setting;
+use VentureDrake\LaravelCrm\Models\Timezone;
+
+class LaravelCrmTablesSeeder extends Seeder
+{
+    /**
+     * Run the database seeds.
+     *
+     * @return void
+     */
+    public function run()
+    {
+        // Labels
+        if (! Setting::where('name', 'db_seeded_labels')->first()) {
+            $items = [
+                [
+                    [
+                        'id' => 1,
+                    ],
+                    [
+                        'name' => 'Hot',
+                        'hex' => 'dc3545',
+                        'external_id' => Uuid::uuid4()->toString(),
+                    ],
+                ],
+                [
+                    [
+                        'id' => 2,
+                    ],
+                    [
+                        'name' => 'Cold',
+                        'hex' => '007bff',
+                        'external_id' => Uuid::uuid4()->toString(),
+                    ],
+                ],
+                [
+                    [
+                        'id' => 3,
+                    ],
+                    [
+                        'name' => 'Warm',
+                        'hex' => 'ffc107',
+                        'external_id' => Uuid::uuid4()->toString(),
+                    ],
+                ],
+            ];
+
+            foreach ($items as $item) {
+                Label::firstOrCreate($item[0], $item[1]);
+            }
+
+            Setting::updateOrCreate([
+                'global' => 1,
+                'name' => 'db_seeded_labels',
+            ], [
+                'value' => 1,
+            ]);
+        }
+
+        // Lead statuses (DEPRECATED)
+        if (! Setting::where('name', 'db_seeded_lead_statuses')->first()) {
+            $items = [
+                [
+                    [
+                        'id' => 1,
+                    ],
+                    [
+                        'name' => 'Lead In',
+                        'external_id' => Uuid::uuid4()->toString(),
+                    ],
+                ],
+                [
+                    [
+                        'id' => 2,
+                    ],
+                    [
+                        'name' => 'Contacted',
+                        'external_id' => Uuid::uuid4()->toString(),
+                    ],
+                ],
+            ];
+
+            foreach ($items as $item) {
+                LeadStatus::firstOrCreate($item[0], $item[1]);
+            }
+
+            Setting::updateOrCreate([
+                'global' => 1,
+                'name' => 'db_seeded_lead_statuses',
+            ], [
+                'value' => 1,
+            ]);
+        }
+
+        // Organization Types
+        if (! Setting::where('name', 'db_seeded_organization_types')->first()) {
+            $items = [
+                [
+                    [
+                        'id' => 1,
+                    ],
+                    [
+                        'name' => 'Sole Trader',
+                    ],
+                ],
+                [
+                    [
+                        'id' => 2,
+                    ],
+                    [
+                        'name' => 'Partnership',
+                    ],
+                ],
+                [
+                    [
+                        'id' => 3,
+                    ],
+                    [
+                        'name' => 'Company',
+                    ],
+                ],
+                [
+                    [
+                        'id' => 4,
+                    ],
+                    [
+                        'name' => 'Trust',
+                    ],
+                ],
+            ];
+
+            foreach ($items as $item) {
+                OrganizationType::firstOrCreate($item[0], $item[1]);
+            }
+
+            Setting::updateOrCreate([
+                'global' => 1,
+                'name' => 'db_seeded_organization_types',
+            ], [
+                'value' => 1,
+            ]);
+        }
+
+        // Address types
+        if (! Setting::where('name', 'db_seeded_address_types')->first()) {
+            $items = [
+                [
+                    [
+                        'id' => 1,
+                    ],
+                    [
+                        'name' => 'Current',
+                    ],
+                ],
+                [
+                    [
+                        'id' => 2,
+                    ],
+                    [
+                        'name' => 'Previous',
+                    ],
+                ],
+                [
+                    [
+                        'id' => 3,
+                    ],
+                    [
+                        'name' => 'Postal',
+                    ],
+                ],
+                [
+                    [
+                        'id' => 4,
+                    ],
+                    [
+                        'name' => 'Business',
+                    ],
+                ],
+                [
+                    [
+                        'id' => 5,
+                    ],
+                    [
+                        'name' => 'Billing',
+                    ],
+                ],
+                [
+                    [
+                        'id' => 6,
+                    ],
+                    [
+                        'name' => 'Shipping',
+                    ],
+                ],
+            ];
+
+            foreach ($items as $item) {
+                AddressType::firstOrCreate($item[0], $item[1]);
+            }
+
+            Setting::updateOrCreate([
+                'global' => 1,
+                'name' => 'db_seeded_address_types',
+            ], [
+                'value' => 1,
+            ]);
+        }
+
+        // Contact types
+        if (! Setting::where('name', 'db_seeded_contact_types')->first()) {
+            $items = [
+                [
+                    [
+                        'id' => 1,
+                    ],
+                    [
+                        'name' => 'Primary',
+                    ],
+                ],
+                [
+                    [
+                        'id' => 2,
+                    ],
+                    [
+                        'name' => 'Secondary',
+                    ],
+                ],
+            ];
+
+            foreach ($items as $item) {
+                ContactType::firstOrCreate($item[0], $item[1]);
+            }
+
+            Setting::updateOrCreate([
+                'global' => 1,
+                'name' => 'db_seeded_contact_types',
+            ], [
+                'value' => 1,
+            ]);
+        }
+
+        // Feature statuses
+        if (! Setting::where('name', 'db_seeded_feature_statuses')->first()) {
+            $items = [
+                [
+                    [
+                        'id' => 1,
+                    ],
+                    [
+                        'name' => 'New',
+                        'color' => '#6c757d',
+                        'order' => 1,
+                        'is_default' => true,
+                        'is_closed' => false,
+                        'external_id' => Uuid::uuid4()->toString(),
+                    ],
+                ],
+                [
+                    [
+                        'id' => 2,
+                    ],
+                    [
+                        'name' => 'Considering',
+                        'color' => '#ffc107',
+                        'order' => 2,
+                        'is_default' => false,
+                        'is_closed' => false,
+                        'external_id' => Uuid::uuid4()->toString(),
+                    ],
+                ],
+                [
+                    [
+                        'id' => 3,
+                    ],
+                    [
+                        'name' => 'Planned',
+                        'color' => '#007bff',
+                        'order' => 3,
+                        'is_default' => false,
+                        'is_closed' => false,
+                        'external_id' => Uuid::uuid4()->toString(),
+                    ],
+                ],
+                [
+                    [
+                        'id' => 4,
+                    ],
+                    [
+                        'name' => 'In Progress',
+                        'color' => '#17a2b8',
+                        'order' => 4,
+                        'is_default' => false,
+                        'is_closed' => false,
+                        'external_id' => Uuid::uuid4()->toString(),
+                    ],
+                ],
+                [
+                    [
+                        'id' => 5,
+                    ],
+                    [
+                        'name' => 'Completed',
+                        'color' => '#28a745',
+                        'order' => 5,
+                        'is_default' => false,
+                        'is_closed' => true,
+                        'external_id' => Uuid::uuid4()->toString(),
+                    ],
+                ],
+                [
+                    [
+                        'id' => 6,
+                    ],
+                    [
+                        'name' => 'Declined',
+                        'color' => '#dc3545',
+                        'order' => 6,
+                        'is_default' => false,
+                        'is_closed' => true,
+                        'external_id' => Uuid::uuid4()->toString(),
+                    ],
+                ],
+            ];
+
+            foreach ($items as $item) {
+                FeatureStatus::firstOrCreate($item[0], $item[1]);
+            }
+
+            Setting::updateOrCreate([
+                'global' => 1,
+                'name' => 'db_seeded_feature_statuses',
+            ], [
+                'value' => 1,
+            ]);
+        }
+
+        // Pipelines
+        $this->callSilent(LaravelCrmPipelineTablesSeeder::class);
+
+        $timestamp = time();
+        foreach (timezone_identifiers_list() as $zone) {
+            date_default_timezone_set($zone);
+            $zones['offset'] = date('P', $timestamp);
+            $zones['diff_from_gtm'] = 'UTC/GMT '.date('P', $timestamp);
+
+            Timezone::updateOrCreate(['name' => $zone], $zones);
+        }
+
+        app()[PermissionRegistrar::class]->forgetCachedPermissions();
+
+        Permission::firstOrCreate(['name' => 'create crm leads', 'crm_permission' => 1]);
+        Permission::firstOrCreate(['name' => 'view crm leads', 'crm_permission' => 1]);
+        Permission::firstOrCreate(['name' => 'edit crm leads', 'crm_permission' => 1]);
+        Permission::firstOrCreate(['name' => 'delete crm leads', 'crm_permission' => 1]);
+
+        Permission::firstOrCreate(['name' => 'create crm deals', 'crm_permission' => 1]);
+        Permission::firstOrCreate(['name' => 'view crm deals', 'crm_permission' => 1]);
+        Permission::firstOrCreate(['name' => 'edit crm deals', 'crm_permission' => 1]);
+        Permission::firstOrCreate(['name' => 'delete crm deals', 'crm_permission' => 1]);
+
+        Permission::firstOrCreate(['name' => 'create crm quotes', 'crm_permission' => 1]);
+        Permission::firstOrCreate(['name' => 'view crm quotes', 'crm_permission' => 1]);
+        Permission::firstOrCreate(['name' => 'edit crm quotes', 'crm_permission' => 1]);
+        Permission::firstOrCreate(['name' => 'delete crm quotes', 'crm_permission' => 1]);
+
+        Permission::firstOrCreate(['name' => 'create crm orders', 'crm_permission' => 1]);
+        Permission::firstOrCreate(['name' => 'view crm orders', 'crm_permission' => 1]);
+        Permission::firstOrCreate(['name' => 'edit crm orders', 'crm_permission' => 1]);
+        Permission::firstOrCreate(['name' => 'delete crm orders', 'crm_permission' => 1]);
+
+        Permission::firstOrCreate(['name' => 'create crm invoices', 'crm_permission' => 1]);
+        Permission::firstOrCreate(['name' => 'view crm invoices', 'crm_permission' => 1]);
+        Permission::firstOrCreate(['name' => 'edit crm invoices', 'crm_permission' => 1]);
+        Permission::firstOrCreate(['name' => 'delete crm invoices', 'crm_permission' => 1]);
+
+        Permission::firstOrCreate(['name' => 'create crm people', 'crm_permission' => 1]);
+        Permission::firstOrCreate(['name' => 'view crm people', 'crm_permission' => 1]);
+        Permission::firstOrCreate(['name' => 'edit crm people', 'crm_permission' => 1]);
+        Permission::firstOrCreate(['name' => 'delete crm people', 'crm_permission' => 1]);
+
+        Permission::firstOrCreate(['name' => 'create crm organizations', 'crm_permission' => 1]);
+        Permission::firstOrCreate(['name' => 'view crm organizations', 'crm_permission' => 1]);
+        Permission::firstOrCreate(['name' => 'edit crm organizations', 'crm_permission' => 1]);
+        Permission::firstOrCreate(['name' => 'delete crm organizations', 'crm_permission' => 1]);
+
+        Permission::firstOrCreate(['name' => 'create crm contacts', 'crm_permission' => 1]);
+        Permission::firstOrCreate(['name' => 'view crm contacts', 'crm_permission' => 1]);
+        Permission::firstOrCreate(['name' => 'edit crm contacts', 'crm_permission' => 1]);
+        Permission::firstOrCreate(['name' => 'delete crm contacts', 'crm_permission' => 1]);
+
+        Permission::firstOrCreate(['name' => 'create crm users', 'crm_permission' => 1]);
+        Permission::firstOrCreate(['name' => 'view crm users', 'crm_permission' => 1]);
+        Permission::firstOrCreate(['name' => 'edit crm users', 'crm_permission' => 1]);
+        Permission::firstOrCreate(['name' => 'delete crm users', 'crm_permission' => 1]);
+
+        Permission::firstOrCreate(['name' => 'create crm teams', 'crm_permission' => 1]);
+        Permission::firstOrCreate(['name' => 'view crm teams', 'crm_permission' => 1]);
+        Permission::firstOrCreate(['name' => 'edit crm teams', 'crm_permission' => 1]);
+        Permission::firstOrCreate(['name' => 'delete crm teams', 'crm_permission' => 1]);
+
+        Permission::firstOrCreate(['name' => 'view crm settings', 'crm_permission' => 1]);
+        Permission::firstOrCreate(['name' => 'edit crm settings', 'crm_permission' => 1]);
+
+        Permission::firstOrCreate(['name' => 'view crm updates', 'crm_permission' => 1]);
+
+        Permission::firstOrCreate(['name' => 'create crm roles', 'crm_permission' => 1]);
+        Permission::firstOrCreate(['name' => 'view crm roles', 'crm_permission' => 1]);
+        Permission::firstOrCreate(['name' => 'edit crm roles', 'crm_permission' => 1]);
+        Permission::firstOrCreate(['name' => 'delete crm roles', 'crm_permission' => 1]);
+
+        Permission::firstOrCreate(['name' => 'create crm permissions', 'crm_permission' => 1]);
+        Permission::firstOrCreate(['name' => 'view crm permissions', 'crm_permission' => 1]);
+        Permission::firstOrCreate(['name' => 'edit crm permissions', 'crm_permission' => 1]);
+        Permission::firstOrCreate(['name' => 'delete crm permissions', 'crm_permission' => 1]);
+
+        Permission::firstOrCreate(['name' => 'create crm products', 'crm_permission' => 1]);
+        Permission::firstOrCreate(['name' => 'view crm products', 'crm_permission' => 1]);
+        Permission::firstOrCreate(['name' => 'edit crm products', 'crm_permission' => 1]);
+        Permission::firstOrCreate(['name' => 'delete crm products', 'crm_permission' => 1]);
+
+        Permission::firstOrCreate(['name' => 'create crm product categories', 'crm_permission' => 1]);
+        Permission::firstOrCreate(['name' => 'view crm product categories', 'crm_permission' => 1]);
+        Permission::firstOrCreate(['name' => 'edit crm product categories', 'crm_permission' => 1]);
+        Permission::firstOrCreate(['name' => 'delete crm product categories', 'crm_permission' => 1]);
+
+        Permission::firstOrCreate(['name' => 'create crm product attributes', 'crm_permission' => 1]);
+        Permission::firstOrCreate(['name' => 'view crm product attributes', 'crm_permission' => 1]);
+        Permission::firstOrCreate(['name' => 'edit crm product attributes', 'crm_permission' => 1]);
+        Permission::firstOrCreate(['name' => 'delete crm product attributes', 'crm_permission' => 1]);
+
+        Permission::firstOrCreate(['name' => 'create crm tax rates', 'crm_permission' => 1]);
+        Permission::firstOrCreate(['name' => 'view crm tax rates', 'crm_permission' => 1]);
+        Permission::firstOrCreate(['name' => 'edit crm tax rates', 'crm_permission' => 1]);
+        Permission::firstOrCreate(['name' => 'delete crm tax rates', 'crm_permission' => 1]);
+
+        Permission::firstOrCreate(['name' => 'create crm labels', 'crm_permission' => 1]);
+        Permission::firstOrCreate(['name' => 'view crm labels', 'crm_permission' => 1]);
+        Permission::firstOrCreate(['name' => 'edit crm labels', 'crm_permission' => 1]);
+        Permission::firstOrCreate(['name' => 'delete crm labels', 'crm_permission' => 1]);
+
+        Permission::firstOrCreate(['name' => 'create crm lead sources', 'crm_permission' => 1]);
+        Permission::firstOrCreate(['name' => 'view crm lead sources', 'crm_permission' => 1]);
+        Permission::firstOrCreate(['name' => 'edit crm lead sources', 'crm_permission' => 1]);
+        Permission::firstOrCreate(['name' => 'delete crm lead sources', 'crm_permission' => 1]);
+
+        Permission::firstOrCreate(['name' => 'create crm fields', 'crm_permission' => 1]);
+        Permission::firstOrCreate(['name' => 'view crm fields', 'crm_permission' => 1]);
+        Permission::firstOrCreate(['name' => 'edit crm fields', 'crm_permission' => 1]);
+        Permission::firstOrCreate(['name' => 'delete crm fields', 'crm_permission' => 1]);
+
+        Permission::firstOrCreate(['name' => 'create crm integrations', 'crm_permission' => 1]);
+        Permission::firstOrCreate(['name' => 'view crm integrations', 'crm_permission' => 1]);
+        Permission::firstOrCreate(['name' => 'edit crm integrations', 'crm_permission' => 1]);
+        Permission::firstOrCreate(['name' => 'delete crm integrations', 'crm_permission' => 1]);
+
+        Permission::firstOrCreate(['name' => 'create crm activities', 'crm_permission' => 1]);
+        Permission::firstOrCreate(['name' => 'view crm activities', 'crm_permission' => 1]);
+        Permission::firstOrCreate(['name' => 'edit crm activities', 'crm_permission' => 1]);
+        Permission::firstOrCreate(['name' => 'delete crm activities', 'crm_permission' => 1]);
+
+        Permission::firstOrCreate(['name' => 'create crm tasks', 'crm_permission' => 1]);
+        Permission::firstOrCreate(['name' => 'view crm tasks', 'crm_permission' => 1]);
+        Permission::firstOrCreate(['name' => 'edit crm tasks', 'crm_permission' => 1]);
+        Permission::firstOrCreate(['name' => 'delete crm tasks', 'crm_permission' => 1]);
+
+        Permission::firstOrCreate(['name' => 'view crm chat', 'crm_permission' => 1]);
+        Permission::firstOrCreate(['name' => 'reply crm chat', 'crm_permission' => 1]);
+        Permission::firstOrCreate(['name' => 'delete crm chat', 'crm_permission' => 1]);
+        Permission::firstOrCreate(['name' => 'manage crm chat widgets', 'crm_permission' => 1]);
+
+        Permission::firstOrCreate(['name' => 'create crm email-campaigns', 'crm_permission' => 1]);
+        Permission::firstOrCreate(['name' => 'view crm email-campaigns', 'crm_permission' => 1]);
+        Permission::firstOrCreate(['name' => 'edit crm email-campaigns', 'crm_permission' => 1]);
+        Permission::firstOrCreate(['name' => 'delete crm email-campaigns', 'crm_permission' => 1]);
+
+        Permission::firstOrCreate(['name' => 'create crm email-templates', 'crm_permission' => 1]);
+        Permission::firstOrCreate(['name' => 'view crm email-templates', 'crm_permission' => 1]);
+        Permission::firstOrCreate(['name' => 'edit crm email-templates', 'crm_permission' => 1]);
+        Permission::firstOrCreate(['name' => 'delete crm email-templates', 'crm_permission' => 1]);
+
+        Permission::firstOrCreate(['name' => 'create crm sms-campaigns', 'crm_permission' => 1]);
+        Permission::firstOrCreate(['name' => 'view crm sms-campaigns', 'crm_permission' => 1]);
+        Permission::firstOrCreate(['name' => 'edit crm sms-campaigns', 'crm_permission' => 1]);
+        Permission::firstOrCreate(['name' => 'delete crm sms-campaigns', 'crm_permission' => 1]);
+
+        Permission::firstOrCreate(['name' => 'create crm sms-templates', 'crm_permission' => 1]);
+        Permission::firstOrCreate(['name' => 'view crm sms-templates', 'crm_permission' => 1]);
+        Permission::firstOrCreate(['name' => 'edit crm sms-templates', 'crm_permission' => 1]);
+        Permission::firstOrCreate(['name' => 'delete crm sms-templates', 'crm_permission' => 1]);
+
+        Permission::firstOrCreate(['name' => 'create crm features', 'crm_permission' => 1]);
+        Permission::firstOrCreate(['name' => 'view crm features', 'crm_permission' => 1]);
+        Permission::firstOrCreate(['name' => 'edit crm features', 'crm_permission' => 1]);
+        Permission::firstOrCreate(['name' => 'delete crm features', 'crm_permission' => 1]);
+        Permission::firstOrCreate(['name' => 'manage crm feature statuses', 'crm_permission' => 1]);
+
+        Permission::firstOrCreate(['name' => 'create crm notes', 'crm_permission' => 1]);
+        Permission::firstOrCreate(['name' => 'view crm notes', 'crm_permission' => 1]);
+        Permission::firstOrCreate(['name' => 'edit crm notes', 'crm_permission' => 1]);
+        Permission::firstOrCreate(['name' => 'delete crm notes', 'crm_permission' => 1]);
+
+        Permission::firstOrCreate(['name' => 'create crm calls', 'crm_permission' => 1]);
+        Permission::firstOrCreate(['name' => 'view crm calls', 'crm_permission' => 1]);
+        Permission::firstOrCreate(['name' => 'edit crm calls', 'crm_permission' => 1]);
+        Permission::firstOrCreate(['name' => 'delete crm calls', 'crm_permission' => 1]);
+
+        Permission::firstOrCreate(['name' => 'create crm meetings', 'crm_permission' => 1]);
+        Permission::firstOrCreate(['name' => 'view crm meetings', 'crm_permission' => 1]);
+        Permission::firstOrCreate(['name' => 'edit crm meetings', 'crm_permission' => 1]);
+        Permission::firstOrCreate(['name' => 'delete crm meetings', 'crm_permission' => 1]);
+
+        Permission::firstOrCreate(['name' => 'create crm lunches', 'crm_permission' => 1]);
+        Permission::firstOrCreate(['name' => 'view crm lunches', 'crm_permission' => 1]);
+        Permission::firstOrCreate(['name' => 'edit crm lunches', 'crm_permission' => 1]);
+        Permission::firstOrCreate(['name' => 'delete crm lunches', 'crm_permission' => 1]);
+
+        Permission::firstOrCreate(['name' => 'create crm files', 'crm_permission' => 1]);
+        Permission::firstOrCreate(['name' => 'view crm files', 'crm_permission' => 1]);
+        Permission::firstOrCreate(['name' => 'edit crm files', 'crm_permission' => 1]);
+        Permission::firstOrCreate(['name' => 'delete crm files', 'crm_permission' => 1]);
+
+        Permission::firstOrCreate(['name' => 'create crm deliveries', 'crm_permission' => 1]);
+        Permission::firstOrCreate(['name' => 'view crm deliveries', 'crm_permission' => 1]);
+        Permission::firstOrCreate(['name' => 'edit crm deliveries', 'crm_permission' => 1]);
+        Permission::firstOrCreate(['name' => 'delete crm deliveries', 'crm_permission' => 1]);
+
+        Permission::firstOrCreate(['name' => 'create crm purchase orders', 'crm_permission' => 1]);
+        Permission::firstOrCreate(['name' => 'view crm purchase orders', 'crm_permission' => 1]);
+        Permission::firstOrCreate(['name' => 'edit crm purchase orders', 'crm_permission' => 1]);
+        Permission::firstOrCreate(['name' => 'delete crm purchase orders', 'crm_permission' => 1]);
+
+        Permission::firstOrCreate(['name' => 'create crm customers', 'crm_permission' => 1]);
+        Permission::firstOrCreate(['name' => 'view crm customers', 'crm_permission' => 1]);
+        Permission::firstOrCreate(['name' => 'edit crm customers', 'crm_permission' => 1]);
+        Permission::firstOrCreate(['name' => 'delete crm customers', 'crm_permission' => 1]);
+
+        Permission::firstOrCreate(['name' => 'create crm pipelines', 'crm_permission' => 1]);
+        Permission::firstOrCreate(['name' => 'view crm pipelines', 'crm_permission' => 1]);
+        Permission::firstOrCreate(['name' => 'edit crm pipelines', 'crm_permission' => 1]);
+        Permission::firstOrCreate(['name' => 'delete crm pipelines', 'crm_permission' => 1]);
+
+        Permission::firstOrCreate(['name' => 'create crm monitors', 'crm_permission' => 1]);
+        Permission::firstOrCreate(['name' => 'view crm monitors', 'crm_permission' => 1]);
+        Permission::firstOrCreate(['name' => 'edit crm monitors', 'crm_permission' => 1]);
+        Permission::firstOrCreate(['name' => 'delete crm monitors', 'crm_permission' => 1]);
+
+        if (config('permission.teams')) {
+            $roleArray = ['name' => 'Owner', 'crm_role' => 1, 'team_id' => null];
+        } else {
+            $roleArray = ['name' => 'Owner', 'crm_role' => 1];
+        }
+
+        $role = Role::firstOrCreate($roleArray)
+            ->givePermissionTo(Permission::all());
+
+        if (config('permission.teams')) {
+            $roleArray = ['name' => 'Admin', 'crm_role' => 1, 'team_id' => null];
+        } else {
+            $roleArray = ['name' => 'Admin', 'crm_role' => 1];
+        }
+
+        $role = Role::firstOrCreate($roleArray)
+            ->givePermissionTo(Permission::all());
+
+        if (config('permission.teams')) {
+            $roleArray = ['name' => 'Manager', 'crm_role' => 1, 'team_id' => null];
+        } else {
+            $roleArray = ['name' => 'Manager', 'crm_role' => 1];
+        }
+
+        $role = Role::firstOrCreate($roleArray)
+            ->givePermissionTo([
+                'create crm leads',
+                'view crm leads',
+                'edit crm leads',
+                'delete crm leads',
+                'create crm deals',
+                'view crm deals',
+                'edit crm deals',
+                'delete crm deals',
+                'create crm quotes',
+                'view crm quotes',
+                'edit crm quotes',
+                'delete crm quotes',
+                'create crm orders',
+                'view crm orders',
+                'edit crm orders',
+                'delete crm orders',
+                'create crm people',
+                'view crm people',
+                'edit crm people',
+                'delete crm people',
+                'create crm organizations',
+                'view crm organizations',
+                'edit crm organizations',
+                'delete crm organizations',
+                'create crm contacts',
+                'view crm contacts',
+                'edit crm contacts',
+                'delete crm contacts',
+                'create crm activities',
+                'view crm activities',
+                'edit crm activities',
+                'delete crm activities',
+                'create crm tasks',
+                'view crm tasks',
+                'edit crm tasks',
+                'delete crm tasks',
+                'create crm notes',
+                'view crm notes',
+                'edit crm notes',
+                'delete crm notes',
+                'create crm calls',
+                'view crm calls',
+                'edit crm calls',
+                'delete crm calls',
+                'create crm meetings',
+                'view crm meetings',
+                'edit crm meetings',
+                'delete crm meetings',
+                'create crm lunches',
+                'view crm lunches',
+                'edit crm lunches',
+                'delete crm lunches',
+                'create crm files',
+                'view crm files',
+                'edit crm files',
+                'delete crm files',
+                'create crm invoices',
+                'view crm invoices',
+                'edit crm invoices',
+                'delete crm invoices',
+                'create crm deliveries',
+                'view crm deliveries',
+                'edit crm deliveries',
+                'delete crm deliveries',
+                'create crm purchase orders',
+                'view crm purchase orders',
+                'edit crm purchase orders',
+                'delete crm purchase orders',
+                'create crm pipelines',
+                'view crm pipelines',
+                'edit crm pipelines',
+                'delete crm pipelines',
+                'view crm chat',
+                'reply crm chat',
+                'delete crm chat',
+                'manage crm chat widgets',
+                'create crm email-campaigns',
+                'view crm email-campaigns',
+                'edit crm email-campaigns',
+                'delete crm email-campaigns',
+                'create crm email-templates',
+                'view crm email-templates',
+                'edit crm email-templates',
+                'delete crm email-templates',
+                'create crm sms-campaigns',
+                'view crm sms-campaigns',
+                'edit crm sms-campaigns',
+                'delete crm sms-campaigns',
+                'create crm sms-templates',
+                'view crm sms-templates',
+                'edit crm sms-templates',
+                'delete crm sms-templates',
+                'create crm features',
+                'view crm features',
+                'edit crm features',
+                'delete crm features',
+                'manage crm feature statuses',
+            ]);
+
+        if (config('permission.teams')) {
+            $roleArray = ['name' => 'Employee', 'crm_role' => 1, 'team_id' => null];
+        } else {
+            $roleArray = ['name' => 'Employee', 'crm_role' => 1];
+        }
+
+        $role = Role::firstOrCreate($roleArray)
+            ->givePermissionTo([
+                'create crm leads',
+                'view crm leads',
+                'edit crm leads',
+                'delete crm leads',
+                'create crm deals',
+                'view crm deals',
+                'edit crm deals',
+                'delete crm deals',
+                'create crm quotes',
+                'view crm quotes',
+                'edit crm quotes',
+                'delete crm quotes',
+                'create crm orders',
+                'view crm orders',
+                'edit crm orders',
+                'delete crm orders',
+                'create crm people',
+                'view crm people',
+                'edit crm people',
+                'delete crm people',
+                'create crm organizations',
+                'view crm organizations',
+                'edit crm organizations',
+                'delete crm organizations',
+                'create crm contacts',
+                'view crm contacts',
+                'edit crm contacts',
+                'delete crm contacts',
+                'create crm activities',
+                'view crm activities',
+                'edit crm activities',
+                'delete crm activities',
+                'create crm tasks',
+                'view crm tasks',
+                'edit crm tasks',
+                'delete crm tasks',
+                'create crm notes',
+                'view crm notes',
+                'edit crm notes',
+                'delete crm notes',
+                'create crm calls',
+                'view crm calls',
+                'edit crm calls',
+                'delete crm calls',
+                'create crm meetings',
+                'view crm meetings',
+                'edit crm meetings',
+                'delete crm meetings',
+                'create crm lunches',
+                'view crm lunches',
+                'edit crm lunches',
+                'delete crm lunches',
+                'create crm files',
+                'view crm files',
+                'edit crm files',
+                'delete crm files',
+                'create crm invoices',
+                'view crm invoices',
+                'edit crm invoices',
+                'delete crm invoices',
+                'create crm deliveries',
+                'view crm deliveries',
+                'edit crm deliveries',
+                'delete crm deliveries',
+                'create crm purchase orders',
+                'view crm purchase orders',
+                'edit crm purchase orders',
+                'delete crm purchase orders',
+                'create crm customers',
+                'view crm customers',
+                'edit crm customers',
+                'delete crm customers',
+                'create crm pipelines',
+                'view crm pipelines',
+                'edit crm pipelines',
+                'delete crm pipelines',
+                'view crm chat',
+                'reply crm chat',
+                'create crm features',
+                'view crm features',
+                'edit crm features',
+                'delete crm features',
+            ]);
+    }
+}

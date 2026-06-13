@@ -1,0 +1,119 @@
+<?php
+
+namespace VentureDrake\LaravelCrm\Observers;
+
+use Ramsey\Uuid\Uuid;
+use VentureDrake\LaravelCrm\Models\PurchaseOrder;
+use VentureDrake\LaravelCrm\Services\NumberGeneratorService;
+use VentureDrake\LaravelCrm\Services\SettingService;
+
+class PurchaseOrderObserver
+{
+    /**
+     * @var SettingService
+     */
+    private $settingService;
+
+    public function __construct(SettingService $settingService)
+    {
+        $this->settingService = $settingService;
+    }
+
+    /**
+     * Handle the purchaseOrder "creating" event.
+     *
+     * @return void
+     */
+    public function creating(PurchaseOrder $purchaseOrder)
+    {
+        $purchaseOrder->external_id = Uuid::uuid4()->toString();
+
+        if (! app()->runningInConsole()) {
+            $purchaseOrder->user_created_id = auth()->user()->id ?? null;
+        }
+
+        $purchaseOrder->number = NumberGeneratorService::next(PurchaseOrder::class, 1000);
+
+        $purchaseOrder->prefix = $this->settingService->get('purchase_order_prefix');
+        $purchaseOrder->purchase_order_id = $purchaseOrder->prefix.$purchaseOrder->number;
+    }
+
+    /**
+     * Handle the purchaseOrder "created" event.
+     *
+     * @return void
+     */
+    public function created(PurchaseOrder $purchaseOrder)
+    {
+        //
+    }
+
+    /**
+     * Handle the purchaseOrder "updating" event.
+     *
+     * @return void
+     */
+    public function updating(PurchaseOrder $purchaseOrder)
+    {
+        if (! app()->runningInConsole()) {
+            $purchaseOrder->user_updated_id = auth()->user()->id ?? null;
+        }
+    }
+
+    /**
+     * Handle the purchaseOrder "updated" event.
+     *
+     * @return void
+     */
+    public function updated(PurchaseOrder $purchaseOrder)
+    {
+        //
+    }
+
+    /**
+     * Handle the purchaseOrder "deleting" event.
+     *
+     * @param  \VentureDrake\LaravelCrm\PurchaseOrder  $purchaseOrder
+     * @return void
+     */
+    public function deleting(PurchaseOrder $purchaseOrder)
+    {
+        if (! app()->runningInConsole()) {
+            $purchaseOrder->user_deleted_id = auth()->user()->id ?? null;
+            $purchaseOrder->saveQuietly();
+        }
+    }
+
+    /**
+     * Handle the purchaseOrder "deleted" event.
+     *
+     * @return void
+     */
+    public function deleted(PurchaseOrder $purchaseOrder)
+    {
+        //
+    }
+
+    /**
+     * Handle the purchaseOrder "restored" event.
+     *
+     * @return void
+     */
+    public function restored(PurchaseOrder $purchaseOrder)
+    {
+        if (! app()->runningInConsole()) {
+            $purchaseOrder->user_restored_id = auth()->user()->id ?? null;
+            $purchaseOrder->saveQuietly();
+        }
+    }
+
+    /**
+     * Handle the purchaseOrder "force deleted" event.
+     *
+     * @return void
+     */
+    public function forceDeleted(PurchaseOrder $purchaseOrder)
+    {
+        //
+    }
+}

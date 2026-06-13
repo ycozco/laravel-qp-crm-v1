@@ -1,0 +1,36 @@
+<?php
+
+return [
+    'organization' => 'organization',
+    'organizations' => 'organizations',
+    'create_organization' => 'create organization',
+    'edit_organization' => 'edit organization',
+    'add_organization' => 'add organization',
+    'organization_stored' => 'organization stored',
+    'organization_updated' => 'organization updated',
+    'organization_deleted' => 'organization deleted',
+    'back_to_organizations' => 'back to organizations',
+    'total_organizations' => 'total organizations',
+    'organization_name' => 'organization name',
+    'related_organizations' => 'related organizations',
+    'link_an_organization' => 'link an organization',
+    'link_organization' => 'link organization',
+    'postcode' => 'postcode',
+    'back_to_organizations' => 'back to organisations',
+
+    // Auth
+    'login' => 'login',
+    'logout' => 'logout',
+    'email_address' => 'email address',
+    'remember_me' => 'remember me',
+    'forgot_password' => 'forgot password',
+    'forgot_password_instructions' => 'enter your email address and we will send you a password reset link.',
+    'send_password_reset_link' => 'send password reset link',
+    'reset_password' => 'reset password',
+    'reset_password_notification' => 'reset password notification',
+    'reset_password_email_line_1' => 'you are receiving this email because we received a password reset request for your account.',
+    'reset_password_email_line_2' => 'if you did not request a password reset, no further action is required.',
+    'password_reset_link_sent' => 'we have emailed your password reset link.',
+    'password_reset_success' => 'your password has been reset.',
+    'back_to_login' => 'back to login',
+];

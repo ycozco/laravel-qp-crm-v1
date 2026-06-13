@@ -1,0 +1,112 @@
+<?php
+
+namespace VentureDrake\LaravelCrm\Http\Controllers;
+
+use Illuminate\Http\Request;
+use Illuminate\Http\Response;
+use Ramsey\Uuid\Uuid;
+use VentureDrake\LaravelCrm\Http\Requests\StoreProductCategoryRequest;
+use VentureDrake\LaravelCrm\Http\Requests\UpdateProductCategoryRequest;
+use VentureDrake\LaravelCrm\Models\ProductCategory;
+
+class ProductCategoryController extends Controller
+{
+    /**
+     * Display a listing of the resource.
+     *
+     * @return Response
+     */
+    public function index()
+    {
+        return view('laravel-crm::settings.product-categories.index');
+    }
+
+    /**
+     * Show the form for creating a new resource.
+     *
+     * @return Response
+     */
+    public function create()
+    {
+        return view('laravel-crm::settings.product-categories.create');
+    }
+
+    /**
+     * Store a newly created resource in storage.
+     *
+     * @param  Request  $request
+     * @return Response
+     */
+    public function store(StoreProductCategoryRequest $request)
+    {
+        ProductCategory::create([
+            'external_id' => Uuid::uuid4()->toString(),
+            'name' => $request->name,
+            'description' => $request->description,
+        ]);
+
+        flash()->success(ucfirst(trans('laravel-crm::lang.product_category_stored')));
+
+        return redirect(route('laravel-crm.product-categories.index'));
+    }
+
+    /**
+     * Display the specified resource.
+     *
+     * @param  int  $id
+     * @return Response
+     */
+    public function show(ProductCategory $productCategory)
+    {
+        return view('laravel-crm::settings.product-categories.show', [
+            'productCategory' => $productCategory,
+        ]);
+    }
+
+    /**
+     * Show the form for editing the specified resource.
+     *
+     * @param  int  $id
+     * @return Response
+     */
+    public function edit(ProductCategory $productCategory)
+    {
+        return view('laravel-crm::settings.product-categories.edit', [
+            'productCategory' => $productCategory,
+        ]);
+    }
+
+    /**
+     * Update the specified resource in storage.
+     *
+     * @param  Request  $request
+     * @param  int  $id
+     * @return Response
+     */
+    public function update(UpdateProductCategoryRequest $request, ProductCategory $productCategory)
+    {
+        $productCategory->update([
+            'name' => $request->name,
+            'description' => $request->description,
+        ]);
+
+        flash()->success(ucfirst(trans('laravel-crm::lang.product_category_updated')));
+
+        return redirect(route('laravel-crm.product-categories.show', $productCategory));
+    }
+
+    /**
+     * Remove the specified resource from storage.
+     *
+     * @param  int  $id
+     * @return Response
+     */
+    public function destroy(ProductCategory $productCategory)
+    {
+        $productCategory->delete();
+
+        flash()->success(ucfirst(trans('laravel-crm::lang.product_category_deleted')));
+
+        return redirect(route('laravel-crm.product-categories.index'));
+    }
+}

@@ -1,0 +1,2 @@
+﻿src\Observers\ChatConversationObserver.php:            $last = ChatConversation::withoutGlobalScopes()->withTrashed()->max('id') ?? 0;
+src\Mail\EmailCampaignMessage.php:        $teamSetting = Setting::withoutGlobalScopes()

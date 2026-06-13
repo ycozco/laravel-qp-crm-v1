@@ -1,0 +1,9 @@
+﻿tests\Feature\BelongsToTeamsScopeTest.php:use VentureDrake\LaravelCrm\Scopes\BelongsToTeamsScope;
+tests\Feature\BelongsToTeamsScopeTest.php:    expect($scopes)->toHaveKey(BelongsToTeamsScope::class);
+tests\README.md:    BelongsToTeamsScopeTest.php
+tests\README.md:- **Multi-tenancy**: `BelongsToTeamsScope` is a no-op when teams disabled;
+src\Traits\BelongsToTeams.php:use VentureDrake\LaravelCrm\Scopes\BelongsToTeamsScope;
+src\Traits\BelongsToTeams.php:        static::addGlobalScope(new BelongsToTeamsScope);
+src\Observers\FeatureObserver.php:use VentureDrake\LaravelCrm\Scopes\BelongsToTeamsScope;
+src\Observers\FeatureObserver.php:            $default = FeatureStatus::withoutGlobalScope(BelongsToTeamsScope::class)
+src\Scopes\BelongsToTeamsScope.php:class BelongsToTeamsScope implements Scope

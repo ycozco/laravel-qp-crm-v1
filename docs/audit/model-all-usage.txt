@@ -1,0 +1,67 @@
+﻿src\LaravelCrm.php:        // return Lead::all();
+src\Console\LaravelCrmXero.php:                    foreach (Product::all() as $product) {
+src\Repositories\TaskRepository.php:        return Task::all();
+src\Repositories\QuoteRepository.php:        return Quote::all();
+src\Repositories\PurchaseOrderRepository.php:        return PurchaseOrder::all();
+src\Repositories\ProductRepository.php:        return Product::all();
+src\Repositories\PersonRepository.php:        return Person::all();
+src\Repositories\OrganizationRepository.php:        return Organization::all();
+src\Console\LaravelCrmFields.php:        foreach (FieldModel::all() as $fieldModel) {
+src\Console\LaravelCrmFields.php:            foreach ($fieldModel->model::all() as $model) {
+src\Repositories\OrderRepository.php:        return Order::all();
+src\Repositories\MonitorRepository.php:        return Monitor::all();
+src\Http\Controllers\TeamController.php:        if (Team::all()->count() < 30) {
+src\Observers\FieldModelObserver.php:        foreach ($fieldModel->model::all() as $model) {
+src\Observers\FieldModelObserver.php:        foreach ($fieldModel->model::all() as $model) {
+src\Http\Controllers\TaxRateController.php:        if (TaxRate::all()->count() < 30) {
+src\Repositories\LeadRepository.php:        return Lead::all();
+src\Repositories\InvoiceRepository.php:        return Invoice::all();
+src\Repositories\FeatureRepository.php:        return Feature::all();
+src\Repositories\DeliveryRepository.php:        return Delivery::all();
+src\Http\Controllers\RoleController.php:            'permissions' => \VentureDrake\LaravelCrm\Models\Permission::all(),
+src\Http\Controllers\RoleController.php:            'permissions' => \VentureDrake\LaravelCrm\Models\Permission::all(),
+src\Http\Controllers\RoleController.php:            foreach (Permission::all() as $permission) {
+src\Repositories\DealRepository.php:        return Deal::all();
+src\Livewire\Users\UserIndex.php:        return Label::all();
+src\Repositories\ChatRepository.php:        return ChatConversation::all();
+src\Http\Controllers\ProductController.php:        $products = Product::all()->filter(function ($record) use ($searchValue) {
+src\Http\Controllers\ProductAttributeController.php:        /* if (ProductAttribute::all()->count() < 30) {
+src\Livewire\Users\Traits\HasUserCommon.php:        foreach (AddressType::all() as $addressType) {
+src\Http\Controllers\PipelineController.php:        if (Pipeline::all()->count() < 30) {
+src\Http\Helpers\SelectOptions.php:        $users = User::all();
+src\Http\Helpers\SelectOptions.php:    foreach (Timezone::all() as $timezone) {
+src\Http\Helpers\AutoComplete.php:    foreach (Client::all() as $client) {
+src\Http\Helpers\AutoComplete.php:    foreach (Client::all() as $client) {
+src\Http\Helpers\AutoComplete.php:    foreach (Person::all() as $person) {
+src\Http\Helpers\AutoComplete.php:    foreach (Person::all() as $person) {
+src\Http\Helpers\AutoComplete.php:    foreach (Organization::all() as $organization) {
+src\Http\Helpers\AutoComplete.php:    foreach (Organisation::all() as $organisation) {
+src\Http\Helpers\AutoComplete.php:    foreach (Organization::all() as $organization) {
+src\Http\Helpers\AutoComplete.php:    foreach (Product::all() as $product) {
+src\Http\Helpers\AutoComplete.php:    foreach (Product::all() as $product) {
+src\Livewire\Teams\TeamIndex.php:        return Label::all();
+src\Livewire\Deals\DealIndex.php:        return Label::all();
+src\Livewire\Deals\DealBoard.php:        return Label::all();
+src\Livewire\Invoices\InvoiceIndex.php:        return Label::all();
+src\Livewire\Deliveries\DeliveryIndex.php:        return Label::all();
+src\Livewire\Quotes\QuoteIndex.php:        return Label::all();
+src\Livewire\Quotes\QuoteBoard.php:        return Label::all();
+src\Livewire\People\PersonImport.php:            foreach (Organization::all() as $org) {
+src\Livewire\People\PersonIndex.php:        return Label::all();
+src\Livewire\Orders\OrderIndex.php:        return Label::all();
+src\Livewire\Products\Traits\HasProductCommon.php:        foreach (ProductCategory::all() as $productCategory) {
+src\Livewire\People\Traits\HasPersonCommon.php:        foreach (AddressType::all() as $addressType) {
+src\Livewire\Organizations\Traits\HasOrganizationCommon.php:        foreach (OrganizationType::all() as $organizationType) {
+src\Livewire\Organizations\Traits\HasOrganizationCommon.php:        foreach (Industry::all() as $industry) {
+src\Livewire\Organizations\Traits\HasOrganizationCommon.php:        foreach (Timezone::all() as $timezone) {
+src\Livewire\Organizations\Traits\HasOrganizationCommon.php:        foreach (AddressType::all() as $addressType) {
+src\Livewire\Products\ProductIndex.php:        return Label::all();
+src\Livewire\Organizations\OrganizationIndex.php:        return Label::all();
+src\Livewire\PurchaseOrders\PurchaseOrderIndex.php:        return Label::all();
+src\Livewire\Organizations\OrganizationImport.php:            foreach (Organization::all() as $org) {
+src\Livewire\Leads\LeadBoard.php:        return Label::all();
+src\Livewire\Leads\LeadIndex.php:        return Label::all();
+src\Livewire\Settings\SettingEdit.php:        foreach (AddressType::all() as $addressType) {
+src\Livewire\Settings\Permissions\RoleIndex.php:                foreach (Permission::all() as $permission) {
+src\Livewire\Settings\Permissions\RoleShow.php:                foreach (Permission::all() as $permission) {
+src\Livewire\Settings\PipelineStages\Traits\HasPipelineStageCommon.php:        $this->pipelines = Pipeline::all();

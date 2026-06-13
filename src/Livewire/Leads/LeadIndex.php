@@ -1,0 +1,144 @@
+<?php
+
+namespace VentureDrake\LaravelCrm\Livewire\Leads;
+
+use App\Models\User;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Pagination\LengthAwarePaginator;
+use Illuminate\Support\Collection;
+use Livewire\Component;
+use Livewire\WithPagination;
+use Mary\Traits\Toast;
+use VentureDrake\LaravelCrm\Livewire\Traits\SearchesEncryptableContacts;
+use VentureDrake\LaravelCrm\Models\Label;
+use VentureDrake\LaravelCrm\Models\Lead;
+use VentureDrake\LaravelCrm\Models\LeadSource;
+use VentureDrake\LaravelCrm\Traits\ClearsProperties;
+use VentureDrake\LaravelCrm\Traits\ResetsPaginationWhenPropsChanges;
+
+class LeadIndex extends Component
+{
+    use ClearsProperties, ResetsPaginationWhenPropsChanges, SearchesEncryptableContacts, Toast, WithPagination;
+
+    public $layout = 'index';
+
+    #[Url]
+    public string $search = '';
+
+    #[Url]
+    public ?array $user_id = [];
+
+    #[Url]
+    public ?array $label_id = [];
+
+    #[Url]
+    public ?array $lead_source_id = [];
+
+    #[Url]
+    public array $sortBy = ['column' => 'created_at', 'direction' => 'desc'];
+
+    public bool $showFilters = false;
+
+    public function filterCount(): int
+    {
+        return (count($this->user_id) > 0 ? 1 : 0)
+            + ($this->label_id ? 1 : 0)
+            + (count($this->lead_source_id) > 0 ? 1 : 0);
+    }
+
+    public function users(): Collection
+    {
+        return User::orderBy('name')->get();
+    }
+
+    public function labels(): Collection
+    {
+        return Label::all();
+    }
+
+    public function leadSources(): Collection
+    {
+        return LeadSource::orderBy('name')->get();
+    }
+
+    public function headers()
+    {
+        return [
+            ['key' => 'created_at', 'label' => ucfirst(__('laravel-crm::lang.created')), 'format' => fn ($row, $field) => $field->diffForHumans()],
+            ['key' => 'lead_id', 'label' => ucfirst(__('laravel-crm::lang.number'))],
+            ['key' => 'title', 'label' => ucfirst(__('laravel-crm::lang.title'))],
+            ['key' => 'labels', 'label' => ucfirst(__('laravel-crm::lang.labels')), 'format' => fn ($row, $field) => $field, 'sortable' => false],
+            ['key' => 'amount', 'label' => ucfirst(__('laravel-crm::lang.value')), 'format' => fn ($row, $field) => money($field, $row->currency)],
+            ['key' => 'person.name', 'label' => ucfirst(__('laravel-crm::lang.contact')), 'sortable' => false],
+            ['key' => 'organization.name', 'label' => ucfirst(__('laravel-crm::lang.organization')), 'sortable' => false],
+            ['key' => 'pipeline_stage', 'label' => ucfirst(__('laravel-crm::lang.stage')), 'sortable' => false],
+            ['key' => 'leadSource.name', 'label' => ucfirst(__('laravel-crm::lang.source')), 'format' => fn ($row, $field) => $field ?? '-', 'sortable' => false],
+            ['key' => 'ownerUser.name', 'label' => 'Owner', 'format' => fn ($row, $field) => $field ?? ucfirst(__('laravel-crm::lang.unallocated')), 'sortable' => false],
+        ];
+    }
+
+    public function leads(): LengthAwarePaginator
+    {
+        return Lead::whereNull('converted_at')
+            ->select(
+                config('laravel-crm.db_table_prefix').'leads.*',
+                config('laravel-crm.db_table_prefix').'people.first_name',
+                config('laravel-crm.db_table_prefix').'people.last_name',
+                config('laravel-crm.db_table_prefix').'organizations.name'
+            )
+            ->leftJoin(config('laravel-crm.db_table_prefix').'people', config('laravel-crm.db_table_prefix').'leads.person_id', '=', config('laravel-crm.db_table_prefix').'people.id')
+            ->leftJoin(config('laravel-crm.db_table_prefix').'organizations', config('laravel-crm.db_table_prefix').'leads.organization_id', '=', config('laravel-crm.db_table_prefix').'organizations.id')
+            ->when($this->search, function (Builder $q) {
+                $prefix = config('laravel-crm.db_table_prefix');
+                $term = $this->search;
+
+                $q->where(function ($q) use ($prefix, $term) {
+                    // Title is never encrypted, so a SQL LIKE always works.
+                    $q->orWhere($prefix.'leads.title', 'like', "%$term%");
+
+                    if ($this->encryptionEnabled()) {
+                        // Person/Organization names are stored encrypted; SQL LIKE
+                        // cannot match ciphertext. Resolve matching IDs in PHP.
+                        if (($personIds = $this->matchingPersonIds($term))->isNotEmpty()) {
+                            $q->orWhereIn($prefix.'leads.person_id', $personIds);
+                        }
+
+                        if (($organizationIds = $this->matchingOrganizationIds($term))->isNotEmpty()) {
+                            $q->orWhereIn($prefix.'leads.organization_id', $organizationIds);
+                        }
+                    } else {
+                        $q->orWhere($prefix.'organizations.name', 'like', "%$term%")
+                            ->orWhere($prefix.'people.first_name', 'like', "%$term%")
+                            ->orWhere($prefix.'people.last_name', 'like', "%$term%")
+                            ->orWhereRaw('CONCAT('.$prefix."people.first_name, ' ', ".$prefix.'people.last_name) like ?', ["%$term%"]);
+                    }
+                });
+            })
+            ->when($this->user_id, fn (Builder $q) => $q->whereIn('user_owner_id', $this->user_id))
+            ->when($this->label_id, fn (Builder $q) => $q->whereHas('labels', fn (Builder $q) => $q->whereIn(config('laravel-crm.db_table_prefix').'labels.id', $this->label_id)))
+            ->when($this->lead_source_id, fn (Builder $q) => $q->whereIn('lead_source_id', $this->lead_source_id))
+            ->orderBy(...array_values($this->sortBy))
+            ->paginate(25);
+    }
+
+    public function delete($id)
+    {
+        if ($lead = Lead::find($id)) {
+            $lead->delete();
+
+            $this->success(ucfirst(trans('laravel-crm::lang.lead_deleted')));
+        }
+    }
+
+    public function render()
+    {
+        return view('laravel-crm::livewire.leads.lead-index', [
+            'users' => $this->users(),
+            'labels' => $this->labels(),
+            'leadSources' => $this->leadSources(),
+            'filterCount' => $this->filterCount(),
+            'headers' => $this->headers(),
+            'leads' => $this->leads(),
+        ]);
+    }
+}

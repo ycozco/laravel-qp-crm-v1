@@ -1,0 +1,285 @@
+<?php
+
+namespace VentureDrake\LaravelCrm\Http\Controllers;
+
+use Barryvdh\DomPDF\Facade\Pdf;
+use Illuminate\Contracts\Encryption\DecryptException;
+use Illuminate\Http\Request;
+use Illuminate\Http\Response;
+use Illuminate\Support\Str;
+use VentureDrake\LaravelCrm\Http\Requests\StoreDeliveryRequest;
+use VentureDrake\LaravelCrm\Http\Requests\UpdateDeliveryRequest;
+use VentureDrake\LaravelCrm\Models\Address;
+use VentureDrake\LaravelCrm\Models\Delivery;
+use VentureDrake\LaravelCrm\Models\Order;
+use VentureDrake\LaravelCrm\Models\Organization;
+use VentureDrake\LaravelCrm\Services\DeliveryService;
+use VentureDrake\LaravelCrm\Services\OrganizationService;
+use VentureDrake\LaravelCrm\Services\PersonService;
+use VentureDrake\LaravelCrm\Services\SettingService;
+
+class DeliveryController extends Controller
+{
+    /**
+     * @var SettingService
+     */
+    private $settingService;
+
+    /**
+     * @var PersonService
+     */
+    private $personService;
+
+    /**
+     * @var OrganizationService
+     */
+    private $organizationService;
+
+    /**
+     * @var DeliveryService
+     */
+    private $deliveryService;
+
+    public function __construct(SettingService $settingService, PersonService $personService, OrganizationService $organizationService, DeliveryService $deliveryService)
+    {
+        $this->settingService = $settingService;
+        $this->personService = $personService;
+        $this->organizationService = $organizationService;
+        $this->deliveryService = $deliveryService;
+    }
+
+    /**
+     * Display a listing of the resource.
+     *
+     * @return Response
+     */
+    public function index(Request $request)
+    {
+        Delivery::resetSearchValue($request);
+        $params = Delivery::filters($request);
+
+        if (Delivery::filter($params)->get()->count() < 30) {
+            $deliveries = Delivery::filter($params)->latest()->get();
+        } else {
+            $deliveries = Delivery::filter($params)->latest()->paginate(30);
+        }
+
+        return view('laravel-crm::deliveries.index', [
+            'deliveries' => $deliveries,
+        ]);
+    }
+
+    /**
+     * Show the form for creating a new resource.
+     *
+     * @return Response
+     */
+    public function create(Request $request)
+    {
+        switch ($request->model) {
+            case 'order':
+                $fromModel = Order::find($request->id);
+
+                /*  $addressIds = [];
+
+                  if ($address = $order->getShippingAddress()) {
+                      $addressIds[] = $address->id;
+                  } elseif ($address = $order->organization->getShippingAddress()) {
+                      $addressIds[] = $address->id;
+                  }
+
+                  $addresses = Address::whereIn('id', $addressIds)->get();*/
+
+                break;
+        }
+
+        return view('laravel-crm::deliveries.create', [
+            'fromModelType' => $request->model,
+            'fromModelId' => $request->id,
+            'stage' => $request->stage ?? null,
+        ]);
+    }
+
+    /**
+     * Store a newly created resource in storage.
+     *
+     * @param  Request  $request
+     * @return Response
+     */
+    public function store(StoreDeliveryRequest $request)
+    {
+        $this->deliveryService->create($request);
+
+        flash()->success(ucfirst(trans('laravel-crm::lang.delivery_created')));
+
+        return redirect(route('laravel-crm.deliveries.index'));
+    }
+
+    /**
+     * Display the specified resource.
+     *
+     * @param  int  $id
+     * @return Response
+     */
+    public function show(Delivery $delivery)
+    {
+        if ($delivery->person) {
+            $email = $delivery->person->getPrimaryEmail();
+            $phone = $delivery->person->getPrimaryPhone();
+        }
+
+        if ($delivery->organization) {
+            $organization_address = $delivery->organization->getPrimaryAddress();
+        }
+
+        return view('laravel-crm::deliveries.show', [
+            'delivery' => $delivery,
+            'email' => $email ?? null,
+            'phone' => $phone ?? null,
+            'organization_address' => $organization_address ?? null,
+            'addresses' => $delivery->addresses,
+        ]);
+    }
+
+    /**
+     * Show the form for editing the specified resource.
+     *
+     * @param  int  $id
+     * @return Response
+     */
+    public function edit(Delivery $delivery)
+    {
+        if ($delivery->person) {
+            $email = $delivery->person->getPrimaryEmail();
+            $phone = $delivery->person->getPrimaryPhone();
+        }
+
+        if ($delivery->organization) {
+            $address = $delivery->organization->getPrimaryAddress();
+        }
+
+        return view('laravel-crm::deliveries.edit', [
+            'delivery' => $delivery,
+            'email' => $email ?? null,
+            'phone' => $phone ?? null,
+            'organization_address' => $address ?? null,
+            'addresses' => $delivery->addresses,
+        ]);
+    }
+
+    /**
+     * Update the specified resource in storage.
+     *
+     * @param  Request  $request
+     * @param  int  $id
+     * @return Response
+     */
+    public function update(UpdateDeliveryRequest $request, Delivery $delivery)
+    {
+        $delivery = $this->deliveryService->update($request, $delivery);
+
+        flash()->success(ucfirst(trans('laravel-crm::lang.delivery_updated')));
+
+        return redirect(route('laravel-crm.deliveries.show', $delivery));
+    }
+
+    /**
+     * Remove the specified resource from storage.
+     *
+     * @param  int  $id
+     * @return Response
+     */
+    public function destroy(Delivery $delivery)
+    {
+        $delivery->delete();
+
+        flash()->success(ucfirst(trans('laravel-crm::lang.delivery_deleted')));
+
+        return redirect(route('laravel-crm.deliveries.index'));
+    }
+
+    public function search(Request $request)
+    {
+        $searchValue = Delivery::searchValue($request);
+
+        if (! $searchValue || trim($searchValue) == '') {
+            return redirect(route('laravel-crm.deliveries.index'));
+        }
+
+        $params = Delivery::filters($request, 'search');
+
+        $deliveries = Delivery::filter($params)
+            ->select(
+                config('laravel-crm.db_table_prefix').'deliveries.*',
+                config('laravel-crm.db_table_prefix').'people.first_name',
+                config('laravel-crm.db_table_prefix').'people.middle_name',
+                config('laravel-crm.db_table_prefix').'people.last_name',
+                config('laravel-crm.db_table_prefix').'people.maiden_name',
+                config('laravel-crm.db_table_prefix').'organizations.name'
+            )
+            ->leftJoin(config('laravel-crm.db_table_prefix').'orders', config('laravel-crm.db_table_prefix').'deliveries.order_id', '=', config('laravel-crm.db_table_prefix').'orders.id')
+            ->leftJoin(config('laravel-crm.db_table_prefix').'people', config('laravel-crm.db_table_prefix').'orders.person_id', '=', config('laravel-crm.db_table_prefix').'people.id')
+            ->leftJoin(config('laravel-crm.db_table_prefix').'organizations', config('laravel-crm.db_table_prefix').'orders.organization_id', '=', config('laravel-crm.db_table_prefix').'organizations.id')
+            ->latest()
+            ->get()
+            ->filter(function ($record) use ($searchValue) {
+                foreach ($record->getSearchable() as $field) {
+                    if (Str::contains($field, '.')) {
+                        $field = explode('.', $field);
+
+                        if (config('laravel-crm.encrypt_db_fields')) {
+                            try {
+                                $relatedField = decrypt($record->{$field[1]});
+                            } catch (DecryptException $e) {
+                                $relatedField = $record->{$field[1]};
+                            }
+                        } else {
+                            $relatedField = $record->{$field[1]};
+                        }
+
+                        if ($record->{$field[1]} && $relatedField) {
+                            if (Str::contains(strtolower($relatedField), strtolower($searchValue))) {
+                                return $record;
+                            }
+                        }
+                    } elseif ($record->{$field}) {
+                        if (Str::contains(strtolower($record->{$field}), strtolower($searchValue))) {
+                            return $record;
+                        }
+                    }
+                }
+            });
+
+        return view('laravel-crm::deliveries.index', [
+            'deliveries' => $deliveries,
+            'searchValue' => $searchValue ?? null,
+        ]);
+    }
+
+    public function download(Delivery $delivery)
+    {
+        if ($person = $delivery->order->person) {
+            $email = $person->getPrimaryEmail();
+            $phone = $person->getPrimaryPhone();
+        }
+
+        if ($organization = $delivery->order->organization) {
+            $organization_address = $organization->getPrimaryAddress();
+        }
+
+        return Pdf::setOption([
+            'fontDir' => public_path('vendor/laravel-crm/fonts'),
+        ])
+            ->loadView('laravel-crm::deliveries.pdf', [
+                'delivery' => $delivery,
+                'order' => $delivery->order,
+                'dateFormat' => app('laravel-crm.settings')->get('date_format', config('laravel-crm.date_format')),
+                'email' => $email ?? null,
+                'phone' => $phone ?? null,
+                'address' => $delivery->getShippingAddress() ?? null,
+                'organization_address' => $delivery->order->getShippingAddress() ?? $organization_address ?? null,
+                'fromName' => app('laravel-crm.settings')->get('organization_name', null),
+                'logo' => app('laravel-crm.settings')->get('logo_file', null),
+            ])->download('delivery-'.strtolower($delivery->delivery_id).'.pdf');
+    }
+}

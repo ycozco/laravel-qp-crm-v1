@@ -1,0 +1,11 @@
+.git
+.github
+node_modules
+vendor
+coverage
+storage
+.env
+.env.*
+npm-debug.log
+yarn-error.log
+docker-compose.override.yml

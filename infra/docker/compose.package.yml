@@ -1,0 +1,69 @@
+name: laravel-crm-package
+
+services:
+  app:
+    build:
+      context: ../..
+      dockerfile: infra/docker/php/Dockerfile
+    container_name: laravel_crm_app
+    working_dir: /var/www/html
+    volumes:
+      - ../..:/var/www/html
+      - composer_vendor:/var/www/html/vendor
+      - composer_cache:/tmp/composer-cache
+    environment:
+      COMPOSER_CACHE_DIR: /tmp/composer-cache
+      DB_CONNECTION: mysql
+      DB_HOST: mysql
+      DB_PORT: 3306
+      DB_DATABASE: laravel_crm
+      DB_USERNAME: laravel_crm
+      DB_PASSWORD: laravel_crm
+      REDIS_HOST: redis
+    depends_on:
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_started
+    command: sleep infinity
+
+  node:
+    image: node:22-bookworm
+    container_name: laravel_crm_node
+    working_dir: /var/www/html
+    volumes:
+      - ../..:/var/www/html
+      - node_modules:/var/www/html/node_modules
+      - npm_cache:/root/.npm
+    command: sh -lc "npm install && npm run build"
+
+  mysql:
+    image: mysql:8.4
+    container_name: laravel_crm_mysql
+    environment:
+      MYSQL_DATABASE: laravel_crm
+      MYSQL_USER: laravel_crm
+      MYSQL_PASSWORD: laravel_crm
+      MYSQL_ROOT_PASSWORD: root
+    ports:
+      - "33068:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1", "-ularavel_crm", "-plaravel_crm"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  redis:
+    image: redis:7-alpine
+    container_name: laravel_crm_redis
+    ports:
+      - "63798:6379"
+
+volumes:
+  composer_cache:
+  composer_vendor:
+  npm_cache:
+  node_modules:
+  mysql_data:

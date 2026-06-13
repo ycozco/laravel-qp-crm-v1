@@ -1,0 +1,147 @@
+<?php
+
+namespace VentureDrake\LaravelCrm\Http\Controllers;
+
+use Illuminate\Http\Request;
+use Illuminate\Http\Response;
+use Illuminate\Support\Str;
+use VentureDrake\LaravelCrm\Http\Requests\StoreProductRequest;
+use VentureDrake\LaravelCrm\Http\Requests\UpdateProductRequest;
+use VentureDrake\LaravelCrm\Models\Product;
+use VentureDrake\LaravelCrm\Services\ProductService;
+
+class ProductController extends Controller
+{
+    /**
+     * @var ProductService
+     */
+    private $productService;
+
+    public function __construct(ProductService $productService)
+    {
+        $this->productService = $productService;
+    }
+
+    /**
+     * Display a listing of the resource.
+     *
+     * @return Response
+     */
+    public function index(Request $request)
+    {
+        return view('laravel-crm::products.index');
+    }
+
+    /**
+     * Show the form for creating a new resource.
+     *
+     * @return Response
+     */
+    public function create()
+    {
+        return view('laravel-crm::products.create');
+    }
+
+    /**
+     * Store a newly created resource in storage.
+     *
+     * @param  Request  $request
+     * @return Response
+     */
+    public function store(StoreProductRequest $request)
+    {
+        $product = $this->productService->create($request);
+
+        flash()->success(ucfirst(trans('laravel-crm::lang.product_stored')));
+
+        return redirect(route('laravel-crm.products.index'));
+    }
+
+    /**
+     * Display the specified resource.
+     *
+     * @param  int  $id
+     * @return Response
+     */
+    public function show(Product $product)
+    {
+        return view('laravel-crm::products.show', [
+            'product' => $product,
+        ]);
+    }
+
+    /**
+     * Show the form for editing the specified resource.
+     *
+     * @param  int  $id
+     * @return Response
+     */
+    public function edit(Product $product)
+    {
+        return view('laravel-crm::products.edit', [
+            'product' => $product,
+        ]);
+    }
+
+    /**
+     * Update the specified resource in storage.
+     *
+     * @param  Request  $request
+     * @param  int  $id
+     * @return Response
+     */
+    public function update(UpdateProductRequest $request, Product $product)
+    {
+        $product = $this->productService->update($product, $request);
+
+        flash()->success(ucfirst(trans('laravel-crm::lang.product_updated')));
+
+        return redirect(route('laravel-crm.products.show', $product));
+    }
+
+    /**
+     * Remove the specified resource from storage.
+     *
+     * @param  int  $id
+     * @return Response
+     */
+    public function destroy(Product $product)
+    {
+        $product->delete();
+
+        flash()->success(ucfirst(trans('laravel-crm::lang.product_deleted')));
+
+        return redirect(route('laravel-crm.products.index'));
+    }
+
+    public function search(Request $request)
+    {
+        $searchValue = Product::searchValue($request);
+
+        if (! $searchValue || trim($searchValue) == '') {
+            return redirect(route('laravel-crm.products.index'));
+        }
+
+        $products = Product::all()->filter(function ($record) use ($searchValue) {
+            foreach ($record->getSearchable() as $field) {
+                if (Str::contains(strtolower($record->{$field}), strtolower($searchValue))) {
+                    return $record;
+                }
+            }
+        });
+
+        return view('laravel-crm::products.index', [
+            'products' => $products,
+            'searchValue' => $searchValue ?? null,
+        ]);
+    }
+
+    public function autocomplete(Product $product)
+    {
+        $productPrice = $product->getDefaultPrice();
+
+        return response()->json([
+            'price' => ($productPrice->unit_price) ? $productPrice->unit_price / 100 : null,
+        ]);
+    }
+}

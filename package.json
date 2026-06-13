@@ -1,0 +1,27 @@
+{
+    "private": true,
+    "type": "module",
+    "scripts": {
+        "build": "vite build",
+        "dev": "vite"
+    },
+    "devDependencies": {
+        "@tailwindcss/forms": "^0.5.7",
+        "@tailwindcss/postcss": "^4.1.4",
+        "@tailwindcss/typography": "^0.5.10",
+        "axios": "^1.7.4",
+        "concurrently": "^9.0.1",
+        "daisyui": "^5.0.27",
+        "laravel-vite-plugin": "^1.0",
+        "postcss": "^8.4.32",
+        "tailwindcss": "^4.1.4",
+        "vite": "^5.0"
+    },
+    "name": "laravel-crm",
+    "dependencies": {
+        "chart.js": "^4.5.1",
+        "sortablejs": "^1.15.6",
+        "tinymce": "^7.6.0",
+        "vanilla-picker": "^2.12.3"
+    }
+}
