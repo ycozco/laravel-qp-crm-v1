@@ -110,6 +110,8 @@
                     @endcan
                 @endhassmsmarketingenabled
 
+                <x-mary-menu-item title="WhatsApp" icon="fas.comments" link="{{ url(route('laravel-crm.whatsapp.index')) }}" />
+
                 @canany(['view crm activities', 'view crm tasks', 'view crm notes'])
                     <x-mary-menu-item title="{{ ucfirst(__('laravel-crm::lang.activity')) }}" icon="fas.timeline" link="{{ url(route('laravel-crm.activities.index')) }}" />
                 @endcanany

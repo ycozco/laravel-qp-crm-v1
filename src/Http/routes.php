@@ -5,6 +5,7 @@ use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\View;
 use VentureDrake\LaravelCrm\Livewire\Settings\Integrations\ClickSend\ClickSendConnect;
 use VentureDrake\LaravelCrm\Livewire\Settings\Integrations\Xero\XeroConnect;
+use VentureDrake\LaravelCrm\Models\WhatsappConversation;
 
 /* Portal routes (public, signed-URL + portal auth + public feature board)
    are registered separately in LaravelCrmServiceProvider::registerRoutes()
@@ -25,6 +26,26 @@ if (config('laravel-crm.route_prefix')) {
 Route::get('dashboard', 'VentureDrake\LaravelCrm\Http\Controllers\DashboardController@index')
     ->middleware('auth.laravel-crm')
     ->name('laravel-crm.dashboard');
+
+/* WhatsApp */
+
+Route::group(['prefix' => 'whatsapp', 'middleware' => 'auth.laravel-crm'], function () {
+    Route::get('', fn () => View::make('laravel-crm::whatsapp.index'))
+        ->name('laravel-crm.whatsapp.index');
+
+    Route::get('settings', fn () => View::make('laravel-crm::whatsapp.settings'))
+        ->name('laravel-crm.whatsapp.settings');
+
+    Route::get('conversations', fn () => View::make('laravel-crm::whatsapp.conversations.index'))
+        ->name('laravel-crm.whatsapp.conversations.index');
+
+    Route::get('conversations/{conversation}', fn (WhatsappConversation $conversation) => View::make('laravel-crm::whatsapp.conversations.show', [
+        'conversation' => $conversation,
+    ]))->name('laravel-crm.whatsapp.conversations.show');
+
+    Route::get('events', fn () => View::make('laravel-crm::whatsapp.events'))
+        ->name('laravel-crm.whatsapp.events');
+});
 
 /* Email Campaigns */
 
