@@ -1,125 +1,165 @@
-# Laravel CRM
+# Laravel QP CRM v1
 
-[![Latest Stable Version](https://img.shields.io/packagist/v/venturedrake/laravel-crm.svg?style=flat-square)](https://packagist.org/packages/venturedrake/laravel-crm)
 [![MIT Licensed](https://img.shields.io/badge/license-MIT-brightgreen.svg?style=flat-square)](LICENSE.md)
-[![Total Downloads](https://img.shields.io/packagist/dt/venturedrake/laravel-crm.svg?style=flat-square)](https://packagist.org/packages/venturedrake/laravel-crm)
 
-![Laravel CRM](art/01KSMTPHKP6TR0YRTC4HRY426J.png)
+CRM Laravel preparado por `ycozco` para pruebas locales, despliegue en servidor y evolucion multitenant. Esta version incluye el core CRM, un MVP de frontend WhatsApp y un receptor de webhooks Meta WhatsApp listo para validacion en `server-test`.
 
-The free Laravel CRM you have been looking for, this package will add CRM functionality to your laravel projects or can be used as a complete standalone CRM built with Laravel. 
+## Estado Actual
 
-## Use Cases
+- CRM Laravel ejecutandose como paquete dentro de un host Laravel.
+- Frontend interno con Blade, Livewire, Mary UI, Tailwind y Vite.
+- Modulo WhatsApp visible en el menu CRM.
+- Datos demo para revisar tenant, cuenta WhatsApp, conversaciones, mensajes y eventos.
+- Endpoint publico para webhooks Meta WhatsApp.
+- Procesamiento basico de mensajes entrantes, historial, estados y errores Meta.
 
-- Use as a free CRM for your business or your clients
-- Build a custom CRM for your business or your clients
-- Use as an integrated CRM for your Laravel powered business (Saas, E-commerce, etc)
-- Use as a CRM for your Laravel development business
-- Run a multi-tenant CRM Saas business
+## Ramas
 
-## Features
+```text
+main        Rama central con frontend WhatsApp MVP y webhook Meta integrado.
+local-test  Rama para pruebas locales.
+server-test Rama para pruebas de servidor, HTTPS, Meta Webhooks y hardening.
+```
 
- - Dashboard
- - Sales leads management
- - Deal management
- - Quote builder
- - Send quotes with accept/reject functionality
- - Orders & Invoicing
- - Purchase orders
- - Deliveries
- - Web / In-app Chat
- - Email marketing
- - SMS marketing
- - Kanban boards 
- - Activity Feed / Timelines
- - Custom fields
- - Customer management
- - Contact database management
- - Products & Product Categories
- - Notes & Tasks
- - File uploads
- - Users & Teams
- - Secure registration & login
- - Roles & Permissions thanks to [Spatie Permissions](https://github.com/spatie/laravel-permission)
- - Xero integration
- - ClickSend integration
+## Rutas Principales
 
-## Live Demo
+CRM local:
 
-[https://demo.laravelcrm.com/register](https://demo.laravelcrm.com/register)
+```text
+http://127.0.0.1:8088/crm
+```
 
-## Official Documentation
+Modulo WhatsApp:
 
-For more information on how to use the package, please refer to the official documentation available on [https://laravelcrm.com/docs](https://laravelcrm.com/docs). The documentation provides very detailed instructions on how to install and use the package.
+```text
+http://127.0.0.1:8088/crm/whatsapp
+http://127.0.0.1:8088/crm/whatsapp/settings
+http://127.0.0.1:8088/crm/whatsapp/conversations
+http://127.0.0.1:8088/crm/whatsapp/events
+```
 
-## Version Information
+Webhook Meta WhatsApp:
 
-Version   | Laravel         | Status                  | PHP Version
-:----------|:----------------|:------------------------|:------------
-2.x       | 11.x.x - 13.x.x | Active support :rocket: | > = 8.2
-1.x      | 6.x.x - 11.x.x  | End of life             | > = 7.3
+```text
+GET  http://127.0.0.1:8088/webhooks/meta/whatsapp
+POST http://127.0.0.1:8088/webhooks/meta/whatsapp
+```
 
-## Installation
+## Acceso Demo
 
-Note: This is a simple installation guide. For more detailed instructions, please refer to the official documentation available on [https://laravelcrm.com/docs](https://laravelcrm.com/docs).
+```text
+admin@crm-laravel.local
+Secret123!
+```
 
-#### Step 1. Install a Laravel project if you don't have one already
+```text
+sales@crm-laravel.local
+Secret123!
+```
 
-https://laravel.com/docs/installation
+## WhatsApp MVP
 
-#### Step 2. Make sure you have set up authentication in your project
+El modulo incluye:
 
-https://laravel.com/docs/authentication
+- Dashboard WhatsApp por tenant.
+- Pantalla de configuracion Meta por tenant.
+- Bandeja de conversaciones.
+- Detalle de mensajes.
+- Registro de eventos webhook.
+- Tokens enmascarados.
+- Filtros y paginacion.
+- Consultas filtradas por `tenant_id`.
 
-#### Step 3. Require the current package using composer:
+## Webhooks Meta WhatsApp
+
+El endpoint implementado soporta:
+
+- Verificacion GET con `hub.challenge`.
+- Validacion de `hub.verify_token`.
+- Recepcion POST de payloads JSON.
+- Validacion HMAC con `X-Hub-Signature-256` cuando se configura `META_WHATSAPP_APP_SECRET`.
+- Resolucion de tenant por `phone_number_id` o WABA id.
+- Persistencia de payload bruto.
+- Creacion/actualizacion de conversaciones.
+- Guardado de mensajes entrantes e historial.
+- Actualizacion de estados de mensajes.
+- Captura de errores Meta en mensajes y eventos.
+
+Variables relevantes:
+
+```text
+META_WHATSAPP_ENABLED=true
+META_WHATSAPP_GRAPH_VERSION=v20.0
+META_WHATSAPP_APP_ID=
+META_WHATSAPP_APP_SECRET=
+META_WHATSAPP_WEBHOOK_VERIFY_TOKEN=
+META_WHATSAPP_WEBHOOK_PATH=/webhooks/meta/whatsapp
+META_WHATSAPP_WEBHOOK_REQUIRE_SIGNATURE=false
+META_WHATSAPP_WEBHOOK_ALLOW_FALLBACK_TENANT=true
+```
+
+En servidor se recomienda:
+
+```text
+META_WHATSAPP_WEBHOOK_REQUIRE_SIGNATURE=true
+META_WHATSAPP_WEBHOOK_ALLOW_FALLBACK_TENANT=false
+APP_DEBUG=false
+APP_URL=https://crm.tu-dominio.com
+```
+
+## Docker Local
+
+Host local esperado:
+
+```text
+D:\proyectos\crm_laravel_host
+```
+
+Servicio:
+
+```text
+crm_laravel_host_web
+```
+
+Puerto:
+
+```text
+8088
+```
+
+Comandos utiles desde el host Laravel:
 
 ```bash
-composer require venturedrake/laravel-crm
+docker compose ps
+docker compose exec -T web php artisan route:list --path=crm/whatsapp
+docker compose exec -T web php artisan route:list --path=webhooks/meta/whatsapp
+docker compose exec -T web php artisan migrate --force
 ```
 
-#### Step 4. Run the installer
+## Documentacion Interna
 
-```bash
-php artisan laravelcrm:install
+```text
+docs/repository/branch-model.md
+docs/repository/feature-workflow.md
+docs/deployment/local-test.md
+docs/deployment/server-test.md
+docs/deployment/server-test-webhooks-meta-whatsapp.md
 ```
 
-#### Step 5. Access the CRN
+## Siguiente Fase
 
-Navigate to http://yoursite.com/crm (or whatever you set LARAVEL_CRM_ROUTE_PREFIX to). Log in with the owner credentials you created during installation.
+- Endurecer despliegue server-test con HTTPS.
+- Configurar app Meta real.
+- Desactivar fallback tenant en servidor.
+- Agregar pruebas feature para GET/POST webhook.
+- Implementar envio real de mensajes por Graph API.
+- Implementar Embedded Signup.
+- Preparar flujo completo multitenant.
 
-## Testing
+## Autor
 
-``` bash
-composer test
-```
+`ycozco`
 
-### Changelog
+## Licencia
 
-Please see [CHANGELOG](CHANGELOG.md) for more information what has changed recently.
-
-## Roadmap
-
- - Documents
- - Calendar
- - CSV Import / Export
- - Payments
-
-## Feedback
-
-Participate in the [discord community](https://discord.gg/rygVyyGSHj)
-
-## Contributing
-
-Please see [CONTRIBUTING](CONTRIBUTING.md) for details.
-
-### Security
-
-If you discover any security related issues, please email andrew@venturedrake.com instead of using the issue tracker.
-
-## Credits
-
-- [Andrew Drake](https://github.com/venturedrake)
-- [All Contributors](../../contributors)
-
-## License
-
-The MIT License (MIT). Please see [License File](LICENSE.md) for more information.
+MIT. Ver [LICENSE.md](LICENSE.md).

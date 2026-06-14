@@ -1,8 +1,8 @@
 {
-    "name": "venturedrake/laravel-crm",
-    "description": "A free open source CRM built as a package for laravel projects",
+    "name": "ycozco/laravel-qp-crm-v1",
+    "description": "Laravel QP CRM v1 with WhatsApp frontend MVP and Meta webhook receiver",
     "keywords": [
-        "venturedrake",
+        "ycozco",
         "laravel",
         "free crm",
         "open source crm",
@@ -20,14 +20,13 @@
         "crm online",
         "crm platform"
     ],
-    "homepage": "https://github.com/venturedrake/laravel-crm",
+    "homepage": "https://github.com/ycozco/laravel-qp-crm-v1",
     "license": "MIT",
     "type": "library",
     "authors": [
         {
-            "name": "Andrew Drake",
-            "email": "andrew@venturedrake.com",
-            "homepage": "https://venturedrake.com",
+            "name": "ycozco",
+            "homepage": "https://github.com/ycozco",
             "role": "Developer"
         }
     ],
