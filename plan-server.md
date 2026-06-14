@@ -1,246 +1,185 @@
-# Plan Server Test - CRM Laravel en subdominios qpsecure.cloud
+# Plan Server Test - despliegue realista de `laravel-crm` en `qpsecure.cloud`
 
-> Validado contra este repositorio: `venturedrake/laravel-crm` es un paquete
-> Laravel, no una app completa. La implementacion ejecutable para `server-test`
-> quedo documentada en `docs/deployment/server-test-implementation.md` y genera
-> el host app Laravel dentro del build Docker para poder publicar `/crm`.
+> Validado contra este repositorio en la rama `server-test`.
+> Este proyecto es un paquete Laravel y el despliegue ejecutable actual crea
+> una sola host app Laravel dentro del build Docker.
 
-## Objetivo
+## Resumen verificado
 
-Preparar la rama `server-test` para desplegar el CRM Laravel en servidor usando este mapa de subdominios:
+- `venturedrake/laravel-crm` es una libreria Laravel, no una app standalone.
+- El despliegue actual ya resuelve esto con `infra/docker/Dockerfile.server`.
+- La libreria si incluye UI interna lista para `/crm` y el modulo WhatsApp:
+  - `/crm/whatsapp`
+  - `/crm/whatsapp/settings`
+  - `/crm/whatsapp/conversations`
+  - `/crm/whatsapp/conversations/{conversation}`
+  - `/crm/whatsapp/events`
+- La libreria si incluye endpoints API consumibles hoy:
+  - `POST /crm/api/v2/auth/token`
+  - `GET /crm/api/v2/auth/me`
+  - `DELETE /crm/api/v2/auth/token`
+  - REST v2 de `leads`, `products`, `organizations`, `people`, `deals`,
+    `quotes`, `orders`, `invoices`
+- La libreria si incluye webhook Meta WhatsApp real:
+  - `GET /webhooks/meta/whatsapp`
+  - `POST /webhooks/meta/whatsapp`
+- La libreria no incluye todavia:
+  - frontend desacoplado real para `crm1app.qpsecure.cloud`
+  - app admin separada distinta del CRM interno
+  - API REST propia para `tenants`, `tenant users`, `tenant whatsapp accounts`,
+    `whatsapp events` o `whatsapp conversations`
+  - UI CRUD completa para editar credenciales Meta por tenant
+  - sistema de webhooks salientes de eventos CRM
+  - Embedded Signup o envio real a Meta
 
-```text
-crm1.qpsecure.cloud
-crm1app.qpsecure.cloud
-admincrm1.qpsecure.cloud
-crmapi.qpsecure.cloud
-```
+## Decision de despliegue para `server-test`
 
-El despliegue debe funcionar detras de Nginx Proxy Manager, mantener las bases de datos fuera de exposicion publica, permitir pruebas del modulo WhatsApp y dejar listo el endpoint de webhooks Meta WhatsApp por HTTPS.
-
-## Mapa de Subdominios
-
-Uso propuesto para cada host:
-
-```text
-crm1.qpsecure.cloud
-Host principal del CRM Laravel y modulo WhatsApp.
-
-crm1app.qpsecure.cloud
-Frontend publico o app cliente separada que consume APIs.
-
-admincrm1.qpsecure.cloud
-Frontend administrativo separado, si se decide desacoplar panel admin del host principal.
-
-crmapi.qpsecure.cloud
-API publica o privada consumida por los frontends del ecosistema.
-```
-
-Recomendacion operativa:
-
-- Mantener `crm1.qpsecure.cloud` como host principal del CRM Laravel.
-- Usar `crmapi.qpsecure.cloud` para APIs desacopladas que deban ser consumidas por otros frontends.
-- Usar `crm1app.qpsecure.cloud` y `admincrm1.qpsecure.cloud` solo si de verdad van a existir como apps separadas.
-- Si admin y CRM viven en la misma app Laravel, no hace falta duplicarlos en hosts distintos todavia.
-
-## Decision Arquitectonica
-
-### Recomendacion para Nginx Proxy Manager
-
-Si actualmente el servidor usa Nginx Proxy Manager como punto unico de entrada, es recomendable mantenerlo asi.
-
-Patron recomendado:
-
-```text
-Internet
-  |
-  | HTTPS 443
-  v
-Nginx Proxy Manager
-  |
-  | red docker compartida proxy
-  v
-crm1 web/app container
-  |
-  | red privada interna crm
-  v
-mysql / redis / queue / scheduler
-```
-
-Motivo:
-
-- Solo Nginx Proxy Manager expone puertos publicos `80/443`.
-- Las apps no publican puertos host salvo que sea una prueba temporal.
-- MySQL y Redis quedan en red privada, sin acceso publico.
-- Cada frontend o API se agrega a la red del proxy solo si necesita recibir trafico HTTP/HTTPS externo.
-- La terminacion TLS queda centralizada en Nginx Proxy Manager.
-
-No es recomendable agregar MySQL, Redis, workers o servicios internos a la red de Nginx Proxy Manager.
-
-### Sobre CORS
-
-Si las apps frontend consumen APIs desde el navegador, CORS es necesario cuando frontend y API tienen origen distinto.
-
-Ejemplos donde hay CORS:
-
-```text
-https://crm1app.qpsecure.cloud   -> https://crmapi.qpsecure.cloud
-https://admincrm1.qpsecure.cloud -> https://crmapi.qpsecure.cloud
-https://crm1.qpsecure.cloud      -> https://crmapi.qpsecure.cloud
-```
-
-Ejemplos donde no deberia necesitarse CORS:
-
-```text
-https://crm1.qpsecure.cloud/crm
-https://crm1.qpsecure.cloud/webhooks/meta/whatsapp
-https://crm1.qpsecure.cloud/api/...
-https://crmapi.qpsecure.cloud si frontend y API se sirven detras del mismo host no aplica, pero con subdominios separados si aplica
-```
-
-Recomendacion:
-
-- Para este CRM, preferir mismo origen siempre que sea posible: `crm1.qpsecure.cloud`.
-- Si se va a separar frontend y API, el par recomendado es `crm1app.qpsecure.cloud` o `admincrm1.qpsecure.cloud` consumiendo `crmapi.qpsecure.cloud`.
-- Para APIs consumidas por otros frontends, permitir CORS solo por dominios concretos, no `*`.
-- Si se usan cookies/sesion, configurar `supports_credentials=true` y no usar wildcard.
-- Si se usan tokens Bearer, CORS sigue aplicando en navegador, pero no requiere cookies.
-- Los webhooks Meta no dependen de CORS porque son llamadas servidor a servidor.
-
-## Dominio y Rutas
-
-Hosts publicos:
-
-```text
-https://crm1.qpsecure.cloud
-https://crm1app.qpsecure.cloud
-https://admincrm1.qpsecure.cloud
-https://crmapi.qpsecure.cloud
-```
-
-CRM principal:
-
-```text
-https://crm1.qpsecure.cloud/crm
-```
-
-Modulo WhatsApp:
-
-```text
-https://crm1.qpsecure.cloud/crm/whatsapp
-https://crm1.qpsecure.cloud/crm/whatsapp/settings
-https://crm1.qpsecure.cloud/crm/whatsapp/conversations
-https://crm1.qpsecure.cloud/crm/whatsapp/events
-```
-
-Webhook Meta WhatsApp:
-
-```text
-GET  https://crm1.qpsecure.cloud/webhooks/meta/whatsapp
-POST https://crm1.qpsecure.cloud/webhooks/meta/whatsapp
-```
-
-API separada si se usa:
-
-```text
-https://crmapi.qpsecure.cloud
-```
-
-## Red Docker
-
-### Red externa del proxy
-
-Identificar el nombre real de la red de Nginx Proxy Manager:
-
-```bash
-docker network ls
-```
-
-Nombres comunes:
-
-```text
-nginx-proxy-manager_default
-npm_default
-proxy
-npm_proxy
-```
-
-Para este plan se usara un placeholder:
-
-```text
-npm_proxy
-```
-
-Si la red real tiene otro nombre, cambiarlo en el compose.
-
-### Redes propuestas
-
-```text
-npm_proxy          externa, compartida con Nginx Proxy Manager
-crm1_internal      privada, solo servicios del CRM
-```
-
-Servicios conectados a `npm_proxy`:
+El despliegue correcto en esta fase es una sola host app Laravel con un solo
+stack Docker:
 
 ```text
 crm1_web
+crm1_queue
+crm1_scheduler
+crm1_mysql
+crm1_redis
 ```
 
-Servicios conectados solo a `crm1_internal`:
+`crm1_web` sera el unico servicio HTTP expuesto a la red de Nginx Proxy
+Manager. MySQL, Redis, queue y scheduler quedaran solo en la red privada
+interna.
+
+## Mapa de subdominios corregido
 
 ```text
+admincrm1.qpsecure.cloud
+Host principal del CRM interno. Aqui vive la UI de /crm.
+
+crmapi.qpsecure.cloud
+Host logico para la API y el webhook, pero apuntando al mismo backend
+crm1_web en esta fase.
+
+crm1.qpsecure.cloud
+Host de entrada del proyecto: redireccion a admin o landing branded si luego
+se personaliza la raiz del host app.
+
+crm1app.qpsecure.cloud
+Reservado. No debe documentarse como app desplegada hasta que exista un
+frontend desacoplado real fuera de la libreria.
+```
+
+## Rutas publicas esperadas
+
+### CRM interno
+
+La UI se montara con:
+
+```text
+LARAVEL_CRM_ROUTE_SUBDOMAIN=admincrm1
+LARAVEL_CRM_ROUTE_PREFIX=crm
+```
+
+Por tanto, las rutas validas de UI quedan en:
+
+```text
+https://admincrm1.qpsecure.cloud/crm/login
+https://admincrm1.qpsecure.cloud/crm
+https://admincrm1.qpsecure.cloud/crm/whatsapp
+https://admincrm1.qpsecure.cloud/crm/whatsapp/settings
+https://admincrm1.qpsecure.cloud/crm/whatsapp/conversations
+https://admincrm1.qpsecure.cloud/crm/whatsapp/events
+```
+
+### API existente del paquete
+
+La API seguira expuesta por el mismo contenedor:
+
+```text
+https://crmapi.qpsecure.cloud/crm/api/v2/auth/token
+https://crmapi.qpsecure.cloud/crm/api/v2/auth/me
+https://crmapi.qpsecure.cloud/crm/api/v2/leads
+https://crmapi.qpsecure.cloud/crm/api/v2/products
+https://crmapi.qpsecure.cloud/crm/api/v2/organizations
+https://crmapi.qpsecure.cloud/crm/api/v2/people
+https://crmapi.qpsecure.cloud/crm/api/v2/deals
+https://crmapi.qpsecure.cloud/crm/api/v2/quotes
+https://crmapi.qpsecure.cloud/crm/api/v2/orders
+https://crmapi.qpsecure.cloud/crm/api/v2/invoices
+```
+
+### Webhook Meta WhatsApp
+
+Tambien sobre el mismo backend:
+
+```text
+GET  https://crmapi.qpsecure.cloud/webhooks/meta/whatsapp
+POST https://crmapi.qpsecure.cloud/webhooks/meta/whatsapp
+```
+
+## Red Docker y proxy
+
+### Redes
+
+```text
+main_npm_network   externa, compartida con Nginx Proxy Manager
+crm1_internal      privada del stack CRM
+```
+
+### Servicios por red
+
+```text
+En main_npm_network:
+crm1_web
+
+En crm1_internal:
+crm1_web
 crm1_mysql
 crm1_redis
 crm1_queue
 crm1_scheduler
 ```
 
-`crm1_web` debe estar en ambas redes:
+### Reglas
 
-```text
-npm_proxy
-crm1_internal
-```
+- Solo `crm1_web` entra a la red del proxy.
+- DB y Redis nunca se publican.
+- No hace falta crear contenedores nuevos para `admincrm1` y `crmapi`; ambos
+  pueden enrutar al mismo `crm1_web`.
 
 ## Nginx Proxy Manager
 
-Crear un Proxy Host para el CRM principal:
+Crear estos Proxy Hosts:
 
 ```text
-Domain Names: crm1.qpsecure.cloud
-Scheme: http
-Forward Hostname / IP: crm1_web
-Forward Port: 8088
-```
-
-Si se despliegan apps separadas, crear tambien:
-
-```text
-Domain Names: crm1app.qpsecure.cloud
-Forward Hostname / IP: <frontend-app-container>
-Forward Port: <frontend-port>
-
 Domain Names: admincrm1.qpsecure.cloud
-Forward Hostname / IP: <admin-app-container>
-Forward Port: <admin-port>
+Forward Hostname / IP: crm1_web
+Forward Port: 80
 
 Domain Names: crmapi.qpsecure.cloud
-Forward Hostname / IP: <api-container>
-Forward Port: <api-port>
+Forward Hostname / IP: crm1_web
+Forward Port: 80
 ```
 
-SSL:
+Para `crm1.qpsecure.cloud` en esta fase:
 
 ```text
-Request a new SSL Certificate
-Force SSL: enabled
-HTTP/2 Support: enabled
-HSTS: enabled solo cuando se confirme que todo funciona
-Block Common Exploits: enabled
-Websockets Support: enabled
+Opcion A: redireccion 301 a https://admincrm1.qpsecure.cloud/crm
+Opcion B: apuntar al mismo crm1_web y luego personalizar la raiz del host app
 ```
 
-Advanced recomendado:
+No publicar `crm1app.qpsecure.cloud` todavia.
+
+SSL recomendado:
+
+```text
+Force SSL: enabled
+HTTP/2 Support: enabled
+Block Common Exploits: enabled
+Websockets Support: enabled
+HSTS: activarlo cuando todo este validado
+```
+
+Advanced:
 
 ```nginx
 client_max_body_size 20m;
@@ -249,9 +188,7 @@ proxy_connect_timeout 120s;
 proxy_send_timeout 120s;
 ```
 
-No publicar `8088` hacia el host en produccion si Nginx Proxy Manager ya enruta por red Docker. Para pruebas se puede publicar temporalmente en localhost.
-
-## Variables de Entorno
+## Variables de entorno para `server-test`
 
 Archivo objetivo:
 
@@ -259,17 +196,14 @@ Archivo objetivo:
 .env.server-test
 ```
 
-Base:
+Base recomendada:
 
 ```text
 APP_NAME="QP CRM"
 APP_ENV=production
 APP_DEBUG=false
-APP_URL=https://crm1.qpsecure.cloud
+APP_URL=https://admincrm1.qpsecure.cloud
 APP_KEY=
-
-LOG_CHANNEL=stack
-LOG_LEVEL=info
 
 DB_CONNECTION=mysql
 DB_HOST=crm1_mysql
@@ -279,23 +213,23 @@ DB_USERNAME=crm1
 DB_PASSWORD=<password-seguro>
 
 REDIS_HOST=crm1_redis
-REDIS_PASSWORD=null
 REDIS_PORT=6379
 
-SESSION_DRIVER=database
+SESSION_DRIVER=redis
 SESSION_DOMAIN=.qpsecure.cloud
 SESSION_SECURE_COOKIE=true
 
+LARAVEL_CRM_OWNER=admincrm1@qpsecure.cloud
+LARAVEL_CRM_ROUTE_SUBDOMAIN=admincrm1
 LARAVEL_CRM_ROUTE_PREFIX=crm
 LARAVEL_CRM_USER_INTERFACE=true
-LARAVEL_CRM_OWNER=admin@crm-laravel.local
 ```
 
 WhatsApp:
 
 ```text
 META_WHATSAPP_ENABLED=true
-META_WHATSAPP_GRAPH_VERSION=v20.0
+META_WHATSAPP_GRAPH_VERSION=v21.0
 META_WHATSAPP_APP_ID=
 META_WHATSAPP_APP_SECRET=
 META_WHATSAPP_WEBHOOK_VERIFY_TOKEN=<token-largo-aleatorio>
@@ -304,170 +238,52 @@ META_WHATSAPP_WEBHOOK_REQUIRE_SIGNATURE=true
 META_WHATSAPP_WEBHOOK_ALLOW_FALLBACK_TENANT=false
 ```
 
-CORS si este CRM o `crmapi.qpsecure.cloud` expone API consumida por otros frontends:
+### CORS corregido
+
+Regla operativa:
+
+- si solo se usa la UI interna en `admincrm1`, casi no hace falta CORS
+- si el navegador consulta `crmapi.qpsecure.cloud`, permitir solo los hosts
+  realmente activos
+
+Valor recomendado en esta fase:
 
 ```text
-CORS_ALLOWED_ORIGINS=https://crm1.qpsecure.cloud,https://crm1app.qpsecure.cloud,https://admincrm1.qpsecure.cloud
+CORS_ALLOWED_ORIGINS=https://admincrm1.qpsecure.cloud,https://crm1.qpsecure.cloud
 ```
 
-Si no hay API consumida por otros frontends, mantener CORS cerrado.
+No incluir `crm1app.qpsecure.cloud` hasta que exista una app real.
 
-## Compose Objetivo
+## Compose real usado por este repo
 
-Archivo sugerido:
+Archivo:
 
 ```text
 infra/docker/compose.server-test.yml
 ```
 
-Estructura propuesta:
+El estado deseado es:
 
-```yaml
-name: crm1-qpsecure
+- una sola imagen `crm1_qpsecure_app:server-test`
+- `crm1_web` corriendo la host app Laravel
+- `crm1_queue` y `crm1_scheduler` reutilizando la misma imagen
+- `crm1_mysql` y `crm1_redis` como servicios internos
 
-services:
-  web:
-    image: crm1_qpsecure_app
-    container_name: crm1_web
-    build:
-      context: ../..
-      dockerfile: infra/docker/Dockerfile.server
-    env_file:
-      - ../../.env.server-test
-    depends_on:
-      - mysql
-      - redis
-    networks:
-      - npm_proxy
-      - crm1_internal
-    command: php artisan serve --host=0.0.0.0 --port=8088
-    restart: unless-stopped
+No hace falta redefinir otro compose paralelo para separar frontend/API en esta
+fase porque el repo todavia no incluye esas apps.
 
-  queue:
-    image: crm1_qpsecure_app
-    container_name: crm1_queue
-    env_file:
-      - ../../.env.server-test
-    depends_on:
-      - mysql
-      - redis
-    networks:
-      - crm1_internal
-    command: php artisan queue:work --tries=3 --timeout=90
-    restart: unless-stopped
+## Webhook Meta WhatsApp
 
-  scheduler:
-    image: crm1_qpsecure_app
-    container_name: crm1_scheduler
-    env_file:
-      - ../../.env.server-test
-    depends_on:
-      - mysql
-      - redis
-    networks:
-      - crm1_internal
-    command: php artisan schedule:work
-    restart: unless-stopped
-
-  mysql:
-    image: mysql:8.4
-    container_name: crm1_mysql
-    environment:
-      MYSQL_DATABASE: crm1
-      MYSQL_USER: crm1
-      MYSQL_PASSWORD: <password-seguro>
-      MYSQL_ROOT_PASSWORD: <root-password-seguro>
-    volumes:
-      - crm1_mysql_data:/var/lib/mysql
-    networks:
-      - crm1_internal
-    restart: unless-stopped
-
-  redis:
-    image: redis:7-alpine
-    container_name: crm1_redis
-    volumes:
-      - crm1_redis_data:/data
-    networks:
-      - crm1_internal
-    restart: unless-stopped
-
-networks:
-  npm_proxy:
-    external: true
-  crm1_internal:
-    driver: bridge
-
-volumes:
-  crm1_mysql_data:
-  crm1_redis_data:
-```
-
-Nota: para mayor solidez en servidor, luego cambiar `php artisan serve` por Nginx + PHP-FPM u Octane. Para `server-test`, `artisan serve` puede ser suficiente si el objetivo es validar dominio, HTTPS, CRM y webhooks.
-
-## Laravel Detras de Proxy
-
-Verificar configuracion de trusted proxies.
-
-Laravel debe reconocer:
-
-```text
-X-Forwarded-Proto: https
-X-Forwarded-Host: crm1.qpsecure.cloud
-```
-
-Si hay problemas con URLs generadas en `http`, cookies inseguras o redirecciones incorrectas:
-
-- revisar middleware `TrustProxies`.
-- forzar `APP_URL=https://crm1.qpsecure.cloud`.
-- asegurar `SESSION_SECURE_COOKIE=true`.
-- limpiar cache:
-
-```bash
-php artisan optimize:clear
-php artisan config:cache
-```
-
-## CORS Recomendado
-
-Para Laravel, revisar `config/cors.php`.
-
-Recomendacion para APIs:
-
-```php
-'allowed_origins' => explode(',', env('CORS_ALLOWED_ORIGINS', 'https://crm1.qpsecure.cloud,https://crm1app.qpsecure.cloud,https://admincrm1.qpsecure.cloud')),
-'allowed_methods' => ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
-'allowed_headers' => ['Content-Type', 'Authorization', 'X-Requested-With', 'X-CSRF-TOKEN'],
-'supports_credentials' => true,
-```
-
-No usar:
-
-```text
-allowed_origins = *
-supports_credentials = true
-```
-
-Para webhooks Meta:
-
-```text
-CORS no aplica
-```
-
-Meta llama desde servidor, no desde navegador.
-
-## Webhooks Meta WhatsApp
-
-En Meta Developers configurar:
+Configurar en Meta Developers:
 
 ```text
 Callback URL:
-https://crm1.qpsecure.cloud/webhooks/meta/whatsapp
+https://crmapi.qpsecure.cloud/webhooks/meta/whatsapp
 
 Verify token:
 META_WHATSAPP_WEBHOOK_VERIFY_TOKEN
 
-Campo a suscribir:
+Campo:
 messages
 ```
 
@@ -475,70 +291,47 @@ Validacion esperada:
 
 ```text
 GET /webhooks/meta/whatsapp?hub.mode=subscribe&hub.challenge=123&hub.verify_token=<token>
+-> HTTP 200
+-> body: 123
 ```
 
-Debe responder:
-
-```text
-HTTP 200
-123
-```
-
-POST esperado:
+Y para POST firmado:
 
 ```text
 HTTP 200
 {"success":true,"processed":N}
 ```
 
-Seguridad:
+## Pasos de despliegue
 
-- `META_WHATSAPP_APP_SECRET` obligatorio en servidor.
-- `META_WHATSAPP_WEBHOOK_REQUIRE_SIGNATURE=true`.
-- `META_WHATSAPP_WEBHOOK_ALLOW_FALLBACK_TENANT=false`.
-- Cada cuenta WhatsApp debe tener `phone_number_id` correcto en `tenant_whatsapp_accounts`.
+### 1. DNS
 
-## Pasos de Despliegue
-
-### 1. Preparar DNS
-
-Crear registros:
+Crear o validar:
 
 ```text
-crm1.qpsecure.cloud -> IP publica del servidor
-crm1app.qpsecure.cloud -> IP publica del servidor
 admincrm1.qpsecure.cloud -> IP publica del servidor
 crmapi.qpsecure.cloud -> IP publica del servidor
+crm1.qpsecure.cloud -> IP publica del servidor
+crm1app.qpsecure.cloud -> IP publica del servidor
 ```
 
-Esperar propagacion y validar:
+`crm1app` puede existir a nivel DNS, pero no debe publicarse todavia en NPM.
 
-```bash
-nslookup crm1.qpsecure.cloud
-nslookup crm1app.qpsecure.cloud
-nslookup admincrm1.qpsecure.cloud
-nslookup crmapi.qpsecure.cloud
-```
+### 2. Red de Nginx Proxy Manager
 
-### 2. Preparar red de Nginx Proxy Manager
-
-Confirmar red:
+Confirmar la red externa real:
 
 ```bash
 docker network ls
 ```
 
-Si no existe red compartida:
+En este repo la referencia actual es:
 
-```bash
-docker network create npm_proxy
+```text
+main_npm_network
 ```
 
-Nginx Proxy Manager debe estar conectado a esa red.
-
-### 3. Subir codigo
-
-En servidor:
+### 3. Codigo
 
 ```bash
 git clone https://github.com/ycozco/laravel-qp-crm-v1.git crm1
@@ -546,240 +339,164 @@ cd crm1
 git checkout server-test
 ```
 
-Si se despliega desde `main`, confirmar que contiene el commit de webhook.
-
-### 4. Crear `.env.server-test`
-
-Copiar plantilla y completar secretos:
+### 4. Entorno
 
 ```bash
 cp docs/deployment/env.server-test.example .env.server-test
 ```
 
-Agregar variables nuevas de WhatsApp y dominio.
+Completar secretos y dejar:
 
-### 5. Construir y levantar
+- `APP_URL=https://admincrm1.qpsecure.cloud`
+- `LARAVEL_CRM_ROUTE_SUBDOMAIN=admincrm1`
+- `CORS_ALLOWED_ORIGINS` solo con hosts activos
 
-```bash
-docker compose -f infra/docker/compose.server-test.yml build
-docker compose -f infra/docker/compose.server-test.yml up -d
-```
-
-### 6. Inicializar Laravel
+### 5. Build y arranque
 
 ```bash
-docker compose -f infra/docker/compose.server-test.yml exec web php artisan key:generate --force
-docker compose -f infra/docker/compose.server-test.yml exec web php artisan migrate --force
-docker compose -f infra/docker/compose.server-test.yml exec web php artisan storage:link
-docker compose -f infra/docker/compose.server-test.yml exec web php artisan optimize:clear
+docker compose --env-file .env.server-test -f infra/docker/compose.server-test.yml build
+docker compose --env-file .env.server-test -f infra/docker/compose.server-test.yml up -d
 ```
 
-### 7. Configurar Nginx Proxy Manager
+### 6. Bootstrap
 
-Crear Proxy Host para:
+El contenedor web ya ejecuta bootstrap automatico:
+
+- genera `APP_KEY` si falta
+- corre migraciones
+- ejecuta `php artisan laravelcrm:install`
+- crea el owner definido por `CRM_OWNER_*`
+
+### 7. Proxy Hosts
+
+Configurar:
 
 ```text
-crm1.qpsecure.cloud -> crm1_web:8088
+admincrm1.qpsecure.cloud -> crm1_web:80
+crmapi.qpsecure.cloud -> crm1_web:80
+crm1.qpsecure.cloud -> redirect a admincrm1 o mismo backend con landing futura
 ```
 
-Si se despliegan frontend app, admin app y API por separado:
+No publicar:
 
 ```text
-crm1app.qpsecure.cloud -> <frontend-app-container>:<frontend-port>
-admincrm1.qpsecure.cloud -> <admin-app-container>:<admin-port>
-crmapi.qpsecure.cloud -> <api-container>:<api-port>
+crm1app.qpsecure.cloud
 ```
 
-Solicitar certificado SSL Let's Encrypt.
+### 8. Validacion funcional
 
-### 8. Validar CRM
+UI:
 
 ```text
-https://crm1.qpsecure.cloud/crm
-https://crm1.qpsecure.cloud/crm/whatsapp
+https://admincrm1.qpsecure.cloud/crm/login
+https://admincrm1.qpsecure.cloud/crm
+https://admincrm1.qpsecure.cloud/crm/whatsapp
 ```
 
-Validar login, menu WhatsApp, conversaciones y eventos.
+API:
 
-### 9. Validar webhook
+```text
+https://crmapi.qpsecure.cloud/crm/api/v2/auth/token
+https://crmapi.qpsecure.cloud/crm/api/v2/auth/me
+```
 
-GET:
+Webhook:
 
 ```bash
-curl "https://crm1.qpsecure.cloud/webhooks/meta/whatsapp?hub.mode=subscribe&hub.challenge=ok123&hub.verify_token=<token>"
+curl "https://crmapi.qpsecure.cloud/webhooks/meta/whatsapp?hub.mode=subscribe&hub.challenge=ok123&hub.verify_token=<token>"
 ```
 
-Debe devolver:
+## Credenciales y usuarios
+
+Las credenciales garantizadas por `server-test` son solo las del owner creado
+por bootstrap:
 
 ```text
-ok123
+CRM_OWNER_NAME
+CRM_OWNER_EMAIL
+CRM_OWNER_PASSWORD
 ```
 
-POST de prueba sin firma solo en entorno local. En servidor la prueba real debe hacerse desde Meta para incluir firma valida.
+Los usuarios demo `admin@crm-laravel.local` y `sales@crm-laravel.local` estan
+garantizados en `local-test`, pero no en `server-test` salvo que se ejecute un
+seeder adicional.
 
-### 10. Configurar Meta
+Ver `data-prueba.md`.
 
-En Meta Developers:
-
-```text
-WhatsApp > Configuration > Webhooks
-Callback URL: https://crm1.qpsecure.cloud/webhooks/meta/whatsapp
-Verify token: <token>
-Subscribe: messages
-```
-
-## Checklist de Seguridad
+## Checklist de aceptacion
 
 ```text
-[ ] DNS crm1.qpsecure.cloud apunta al servidor correcto
-[ ] DNS crm1app.qpsecure.cloud apunta al servidor correcto
-[ ] DNS admincrm1.qpsecure.cloud apunta al servidor correcto
-[ ] DNS crmapi.qpsecure.cloud apunta al servidor correcto
-[ ] Nginx Proxy Manager fuerza HTTPS
-[ ] APP_DEBUG=false
-[ ] APP_URL=https://crm1.qpsecure.cloud
-[ ] DB y Redis no exponen puertos publicos
-[ ] Solo crm1_web esta en la red de Nginx Proxy Manager
-[ ] META_WHATSAPP_APP_SECRET configurado
-[ ] META_WHATSAPP_WEBHOOK_REQUIRE_SIGNATURE=true
-[ ] META_WHATSAPP_WEBHOOK_ALLOW_FALLBACK_TENANT=false
-[ ] Tokens de Meta cifrados y nunca visibles en frontend/logs
-[ ] Backups MySQL configurados
-[ ] Logs revisables por contenedor
-[ ] CORS limitado a origenes concretos
-[ ] `crmapi.qpsecure.cloud` solo permite `crm1.qpsecure.cloud`, `crm1app.qpsecure.cloud` y `admincrm1.qpsecure.cloud` si corresponde
-```
-
-## Checklist Funcional
-
-```text
-[ ] https://crm1.qpsecure.cloud responde
-[ ] https://crm1app.qpsecure.cloud responde si existe frontend app
-[ ] https://admincrm1.qpsecure.cloud responde si existe frontend admin
-[ ] https://crmapi.qpsecure.cloud responde si existe API separada
-[ ] /crm redirige correctamente a login/dashboard
-[ ] Login admin funciona
+[ ] admincrm1.qpsecure.cloud responde por HTTPS
+[ ] crmapi.qpsecure.cloud responde por HTTPS
+[ ] crm1.qpsecure.cloud redirige o sirve la raiz esperada
+[ ] crm1app.qpsecure.cloud no se publica todavia
+[ ] /crm/login funciona en admincrm1
 [ ] /crm/whatsapp carga dashboard
 [ ] /crm/whatsapp/settings muestra callback URL HTTPS
 [ ] /crm/whatsapp/conversations lista conversaciones
 [ ] /crm/whatsapp/events lista eventos
+[ ] POST /crm/api/v2/auth/token emite token
+[ ] GET /crm/api/v2/auth/me responde con Bearer valido
 [ ] GET webhook devuelve hub.challenge
-[ ] Meta puede verificar callback
-[ ] Meta entrega webhook messages
-[ ] Se crea conversacion por phone_number_id
-[ ] Se guarda mensaje inbound
-[ ] Se actualiza estado delivered/read/failed
-[ ] Errores Meta aparecen en eventos y detalle de conversacion
+[ ] POST webhook firmado crea o actualiza eventos y mensajes
+[ ] CORS no usa wildcard
+[ ] DB y Redis no quedan expuestos al publico
 ```
 
-## Riesgos y Mitigaciones
+## Riesgos y limites conocidos
 
-### CORS abierto
+### `crm1app` aun no existe
 
 Riesgo:
 
 ```text
-allowed_origins=*
+Documentar crm1app como app operativa causaria confusion de despliegue.
 ```
 
 Mitigacion:
 
 ```text
-Usar solo dominios conocidos de qpsecure.cloud:
-crm1.qpsecure.cloud
-crm1app.qpsecure.cloud
-admincrm1.qpsecure.cloud
-crmapi.qpsecure.cloud
+Dejarlo reservado a nivel DNS y fuera de Nginx Proxy Manager en esta fase.
 ```
 
-### Servicios internos en red del proxy
+### `crmapi` no es un backend separado
 
 Riesgo:
 
 ```text
-mysql/redis visibles para otros contenedores innecesarios.
+Pensar que crmapi tiene contenedor propio cuando hoy comparte crm1_web.
 ```
 
 Mitigacion:
 
 ```text
-Solo crm1_web en npm_proxy. DB, Redis, queue y scheduler en crm1_internal.
+Documentarlo explicitamente como host logico sobre el mismo backend.
 ```
 
-### Firma Meta desactivada
+### Credenciales demo no garantizadas en servidor
 
 Riesgo:
 
 ```text
-Cualquier cliente puede publicar payloads falsos al webhook.
+Esperar usuarios de prueba no creados por bootstrap.
 ```
 
 Mitigacion:
 
 ```text
-META_WHATSAPP_WEBHOOK_REQUIRE_SIGNATURE=true en servidor.
+Usar solo el owner garantizado o crear un seeder especifico para server-test.
 ```
 
-### Fallback tenant activo
-
-Riesgo:
+## Estado deseado al final
 
 ```text
-Eventos con phone_number_id desconocido pueden entrar al primer tenant activo.
-```
-
-Mitigacion:
-
-```text
-META_WHATSAPP_WEBHOOK_ALLOW_FALLBACK_TENANT=false en servidor.
-```
-
-### `artisan serve` en produccion
-
-Riesgo:
-
-```text
-No es el servidor HTTP mas robusto para trafico real.
-```
-
-Mitigacion:
-
-```text
-Usarlo solo en server-test. Migrar a Nginx + PHP-FPM u Octane antes de produccion.
-```
-
-## Orden Recomendado de Implementacion
-
-```text
-1. Crear infra/docker/compose.server-test.yml
-2. Crear Dockerfile.server
-3. Crear .env.server-test completo para crm1.qpsecure.cloud y subdominios relacionados
-4. Levantar stack sin proxy y probar internamente
-5. Conectar crm1_web a red de Nginx Proxy Manager
-6. Configurar Proxy Host crm1.qpsecure.cloud
-7. Configurar crm1app.qpsecure.cloud, admincrm1.qpsecure.cloud y crmapi.qpsecure.cloud si se desplegaran en esta fase
-8. Validar HTTPS y login
-9. Validar modulo WhatsApp
-10. Validar CORS real entre subdominios si hay frontend/API separados
-11. Configurar Meta Webhook
-12. Probar entrega real messages
-13. Revisar logs y hardening
-14. Promover ajustes finales a main
-```
-
-## Estado Deseado al Final de Server Test
-
-```text
-crm1.qpsecure.cloud operativo por HTTPS
-crm1app.qpsecure.cloud operativo si existe frontend app
-admincrm1.qpsecure.cloud operativo si existe frontend admin
-crmapi.qpsecure.cloud operativo si existe API separada
-CRM accesible en /crm
-Modulo WhatsApp visible y funcional
-Webhook Meta verificado desde Meta Developers
-Eventos messages guardados
-Conversaciones y mensajes creados por tenant
-Estados y errores visibles en frontend
-DB/Redis privados
+Una sola host app Laravel desplegada
+admincrm1.qpsecure.cloud como CRM interno principal
+crmapi.qpsecure.cloud como alias funcional para API y webhook
+crm1.qpsecure.cloud como entrada o redireccion
+crm1app.qpsecure.cloud reservado para fase posterior
+Modulo WhatsApp visible y funcional en UI interna
+Webhook Meta verificado y procesando eventos
+DB, Redis, queue y scheduler privados
 Nginx Proxy Manager como unico punto publico 80/443
 ```
