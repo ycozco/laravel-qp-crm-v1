@@ -1,0 +1,100 @@
+ARG PHP_IMAGE=php:8.3-apache-bookworm
+ARG LARAVEL_VERSION=^12.0
+ARG PACKAGE_CONSTRAINT=*@dev
+
+FROM ${PHP_IMAGE} AS build
+
+ARG LARAVEL_VERSION
+ARG PACKAGE_CONSTRAINT
+
+ENV DEBIAN_FRONTEND=noninteractive \
+    COMPOSER_ALLOW_SUPERUSER=1 \
+    APACHE_DOCUMENT_ROOT=/var/www/app/public
+
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends \
+        ca-certificates \
+        curl \
+        git \
+        unzip \
+        libfreetype6-dev \
+        libicu-dev \
+        libjpeg62-turbo-dev \
+        libonig-dev \
+        libpng-dev \
+        libxml2-dev \
+        libzip-dev \
+        zlib1g-dev \
+    && docker-php-ext-configure gd --with-freetype --with-jpeg \
+    && docker-php-ext-install -j"$(nproc)" bcmath exif gd intl opcache pcntl pdo_mysql zip \
+    && pecl install redis \
+    && docker-php-ext-enable redis \
+    && a2enmod expires headers remoteip rewrite \
+    && rm -rf /var/lib/apt/lists/*
+
+COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
+
+RUN { \
+        echo 'opcache.enable=1'; \
+        echo 'opcache.enable_cli=1'; \
+        echo 'opcache.memory_consumption=192'; \
+        echo 'opcache.interned_strings_buffer=16'; \
+        echo 'opcache.max_accelerated_files=20000'; \
+        echo 'opcache.validate_timestamps=0'; \
+    } > /usr/local/etc/php/conf.d/zz-opcache.ini
+
+WORKDIR /opt/package
+COPY . /opt/package
+
+RUN composer create-project laravel/laravel /var/www/app "${LARAVEL_VERSION}" --no-interaction --prefer-dist \
+    && cd /var/www/app \
+    && composer config minimum-stability dev \
+    && composer config prefer-stable true \
+    && composer config repositories.local '{"type":"path","url":"/opt/package","options":{"symlink":false}}' \
+    && composer require venturedrake/laravel-crm:"${PACKAGE_CONSTRAINT}" --no-interaction --with-all-dependencies \
+    && php artisan vendor:publish --provider="VentureDrake\\LaravelCrm\\LaravelCrmServiceProvider" --tag=config --force \
+    && php artisan vendor:publish --provider="VentureDrake\\LaravelCrm\\LaravelCrmServiceProvider" --tag=migrations --force \
+    && php artisan vendor:publish --provider="VentureDrake\\LaravelCrm\\LaravelCrmServiceProvider" --tag=assets --force \
+    && php artisan storage:link \
+    && php /opt/package/infra/docker/scripts/patch-host-app.php /var/www/app \
+    && composer install --no-dev --optimize-autoloader --classmap-authoritative --no-interaction \
+    && rm -rf /root/.composer/cache /tmp/*
+
+FROM ${PHP_IMAGE} AS runtime
+
+ENV DEBIAN_FRONTEND=noninteractive \
+    APACHE_DOCUMENT_ROOT=/var/www/app/public
+
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends \
+        ca-certificates \
+        curl \
+        libfreetype6 \
+        libicu72 \
+        libjpeg62-turbo \
+        libonig5 \
+        libpng16-16 \
+        libxml2 \
+        libzip4 \
+    && a2enmod expires headers remoteip rewrite \
+    && rm -rf /var/lib/apt/lists/*
+
+COPY --from=build /usr/local/lib/php/extensions /usr/local/lib/php/extensions
+COPY --from=build /usr/local/etc/php/conf.d /usr/local/etc/php/conf.d
+COPY --from=build /var/www/app /var/www/app
+
+COPY infra/docker/apache/crm.conf /etc/apache2/sites-available/000-default.conf
+COPY infra/docker/scripts/bootstrap.sh /usr/local/bin/bootstrap-crm
+COPY infra/docker/scripts/start-web.sh /usr/local/bin/start-web
+COPY infra/docker/scripts/run-worker.sh /usr/local/bin/run-worker
+COPY infra/docker/scripts/run-scheduler.sh /usr/local/bin/run-scheduler
+
+RUN chmod +x /usr/local/bin/bootstrap-crm /usr/local/bin/start-web /usr/local/bin/run-worker /usr/local/bin/run-scheduler \
+    && mkdir -p /var/www/app/storage/framework /var/www/app/storage/logs /var/www/app/bootstrap/cache \
+    && chown -R www-data:www-data /var/www/app
+
+WORKDIR /var/www/app
+
+HEALTHCHECK --interval=30s --timeout=5s --start-period=45s --retries=5 CMD curl -fsS http://127.0.0.1/up || exit 1
+
+CMD ["/usr/local/bin/start-web"]

@@ -1,5 +1,10 @@
 # Plan Server Test - CRM Laravel en subdominios qpsecure.cloud
 
+> Validado contra este repositorio: `venturedrake/laravel-crm` es un paquete
+> Laravel, no una app completa. La implementacion ejecutable para `server-test`
+> quedo documentada en `docs/deployment/server-test-implementation.md` y genera
+> el host app Laravel dentro del build Docker para poder publicar `/crm`.
+
 ## Objetivo
 
 Preparar la rama `server-test` para desplegar el CRM Laravel en servidor usando este mapa de subdominios:

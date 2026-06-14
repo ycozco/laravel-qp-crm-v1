@@ -1,0 +1,103 @@
+name: crm1-qpsecure
+
+x-app-env: &app-env
+  env_file:
+    - ../../.env.server-test
+  depends_on:
+    mysql:
+      condition: service_healthy
+    redis:
+      condition: service_healthy
+  restart: unless-stopped
+
+services:
+  web:
+    image: crm1_qpsecure_app:server-test
+    build:
+      context: ../..
+      dockerfile: infra/docker/Dockerfile.server
+      target: runtime
+      args:
+        LARAVEL_VERSION: ^12.0
+        PACKAGE_CONSTRAINT: "*@dev"
+    container_name: crm1_web
+    <<: *app-env
+    networks:
+      - npm_proxy
+      - crm1_internal
+    volumes:
+      - crm1_app_storage:/var/www/app/storage
+
+  queue:
+    image: crm1_qpsecure_app:server-test
+    container_name: crm1_queue
+    <<: *app-env
+    command: ["/usr/local/bin/run-worker"]
+    healthcheck:
+      disable: true
+    networks:
+      - crm1_internal
+    volumes:
+      - crm1_app_storage:/var/www/app/storage
+
+  scheduler:
+    image: crm1_qpsecure_app:server-test
+    container_name: crm1_scheduler
+    <<: *app-env
+    command: ["/usr/local/bin/run-scheduler"]
+    healthcheck:
+      disable: true
+    networks:
+      - crm1_internal
+    volumes:
+      - crm1_app_storage:/var/www/app/storage
+
+  mysql:
+    image: mysql:8.4
+    container_name: crm1_mysql
+    command:
+      - --skip-name-resolve
+    environment:
+      MYSQL_DATABASE: ${DB_DATABASE:?DB_DATABASE no definido}
+      MYSQL_USER: ${DB_USERNAME:?DB_USERNAME no definido}
+      MYSQL_PASSWORD: ${DB_PASSWORD:?DB_PASSWORD no definido}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:?MYSQL_ROOT_PASSWORD no definido}
+    volumes:
+      - crm1_mysql_data:/var/lib/mysql
+    networks:
+      - crm1_internal
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h 127.0.0.1 -uroot -p\"$${MYSQL_ROOT_PASSWORD}\" --silent"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 20s
+    restart: unless-stopped
+
+  redis:
+    image: redis:7-alpine
+    container_name: crm1_redis
+    command: ["redis-server", "--appendonly", "yes"]
+    volumes:
+      - crm1_redis_data:/data
+    networks:
+      - crm1_internal
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 10s
+    restart: unless-stopped
+
+networks:
+  npm_proxy:
+    external: true
+    name: main_npm_network
+  crm1_internal:
+    driver: bridge
+
+volumes:
+  crm1_app_storage:
+  crm1_mysql_data:
+  crm1_redis_data:
