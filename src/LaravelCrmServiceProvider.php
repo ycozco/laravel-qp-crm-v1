@@ -271,6 +271,11 @@ use VentureDrake\LaravelCrm\Livewire\Users\UserEdit;
 use VentureDrake\LaravelCrm\Livewire\Users\UserImport;
 use VentureDrake\LaravelCrm\Livewire\Users\UserIndex;
 use VentureDrake\LaravelCrm\Livewire\Users\UserShow;
+use VentureDrake\LaravelCrm\Livewire\Whatsapp\WhatsappConversationIndex;
+use VentureDrake\LaravelCrm\Livewire\Whatsapp\WhatsappConversationShow;
+use VentureDrake\LaravelCrm\Livewire\Whatsapp\WhatsappDashboard;
+use VentureDrake\LaravelCrm\Livewire\Whatsapp\WhatsappEventIndex;
+use VentureDrake\LaravelCrm\Livewire\Whatsapp\WhatsappSettings;
 use VentureDrake\LaravelCrm\Models\Activity;
 use VentureDrake\LaravelCrm\Models\Call;
 use VentureDrake\LaravelCrm\Models\ChatConversation;
@@ -811,6 +816,7 @@ class LaravelCrmServiceProvider extends ServiceProvider
                 __DIR__.'/../database/migrations/make_name_nullable_on_laravel_crm_monitors_table.php.stub' => $this->getMigrationFileName($filesystem, 'make_name_nullable_on_laravel_crm_monitors_table.php', 132),
                 __DIR__.'/../database/migrations/add_views_count_to_laravel_crm_features_table.php.stub' => $this->getMigrationFileName($filesystem, 'add_views_count_to_laravel_crm_features_table.php', 133),
                 __DIR__.'/../database/migrations/create_laravel_crm_feature_views_table.php.stub' => $this->getMigrationFileName($filesystem, 'create_laravel_crm_feature_views_table.php', 134),
+                __DIR__.'/../database/migrations/create_laravel_crm_whatsapp_tables.php.stub' => $this->getMigrationFileName($filesystem, 'create_laravel_crm_whatsapp_tables.php', 135),
             ], 'migrations');
 
             // Publishing the seeders
@@ -977,6 +983,11 @@ class LaravelCrmServiceProvider extends ServiceProvider
         Livewire::component('crm-sms-template-edit', SmsTemplateEdit::class);
         Livewire::component('crm-sms-template-show', SmsTemplateShow::class);
         Livewire::component('crm-clicksend-connect', ClickSendConnect::class);
+        Livewire::component('crm-whatsapp-dashboard', WhatsappDashboard::class);
+        Livewire::component('crm-whatsapp-settings', WhatsappSettings::class);
+        Livewire::component('crm-whatsapp-conversation-index', WhatsappConversationIndex::class);
+        Livewire::component('crm-whatsapp-conversation-show', WhatsappConversationShow::class);
+        Livewire::component('crm-whatsapp-event-index', WhatsappEventIndex::class);
         Livewire::component('crm-deal-index', DealIndex::class);
         Livewire::component('crm-deal-board', DealBoard::class);
         Livewire::component('crm-deal-show', DealShow::class);
