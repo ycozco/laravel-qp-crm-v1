@@ -37,7 +37,7 @@
                             <td>{{ $conversation->messages_count }}</td>
                             <td>{{ $conversation->last_message_at?->diffForHumans() ?? 'Sin mensajes' }}</td>
                             <td class="text-right">
-                                <x-mary-button icon="o-eye" link="{{ url(route('laravel-crm.whatsapp.conversations.show', $conversation)) }}" class="btn-sm btn-square btn-outline" />
+                                <x-mary-button icon="o-eye" link="{{ route('laravel-crm.whatsapp.conversations.show', ['conversation' => $conversation, 'tenant' => $tenant?->id]) }}" class="btn-sm btn-square btn-outline" />
                             </td>
                         </tr>
                     @empty

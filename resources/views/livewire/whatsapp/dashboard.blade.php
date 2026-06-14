@@ -1,8 +1,8 @@
 <div class="crm-content">
     <x-mary-header title="WhatsApp" subtitle="{{ $tenant?->name ?? 'Sin tenant asignado' }}" progress-indicator>
         <x-slot:actions>
-            <x-mary-button label="Configurar" icon="o-cog-6-tooth" link="{{ url(route('laravel-crm.whatsapp.settings')) }}" class="btn-outline" responsive />
-            <x-mary-button label="Conversaciones" icon="o-chat-bubble-left-right" link="{{ url(route('laravel-crm.whatsapp.conversations.index')) }}" class="btn-primary text-white" responsive />
+            <x-mary-button label="Configurar" icon="o-cog-6-tooth" link="{{ route('laravel-crm.whatsapp.settings', ['tenant' => $tenant?->id]) }}" class="btn-outline" responsive />
+            <x-mary-button label="Conversaciones" icon="o-chat-bubble-left-right" link="{{ route('laravel-crm.whatsapp.conversations.index', ['tenant' => $tenant?->id]) }}" class="btn-primary text-white" responsive />
         </x-slot:actions>
     </x-mary-header>
 
@@ -10,7 +10,7 @@
 
     @unless($tenant)
         <x-mary-alert icon="o-exclamation-triangle" class="alert-warning mb-4">
-            Este usuario no tiene un tenant CRM asignado. Ejecuta el seeder demo para habilitar el modulo.
+            Este usuario no tiene un tenant CRM asignado. Crea uno desde Configuracion para habilitar el modulo o ejecuta el seeder demo en server-test.
         </x-mary-alert>
     @endunless
 

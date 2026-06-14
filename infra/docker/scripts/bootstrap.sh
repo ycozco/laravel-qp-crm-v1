@@ -94,6 +94,11 @@ bootstrap_web() {
             --owner-name="${CRM_OWNER_NAME}" \
             --owner-email="${CRM_OWNER_EMAIL}" \
             --owner-password="${CRM_OWNER_PASSWORD}"
+
+        if [ "${CRM_SEED_SERVER_TEST_DEMO:-true}" = "true" ]; then
+            php artisan db:seed --class="VentureDrake\\LaravelCrm\\Database\\Seeders\\ServerTestDemoSeeder" --force
+        fi
+
         date -u +"%Y-%m-%dT%H:%M:%SZ" > "${BOOTSTRAP_MARKER}"
     fi
 

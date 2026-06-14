@@ -2,6 +2,7 @@
 
 namespace VentureDrake\LaravelCrm\Livewire\Whatsapp;
 
+use Livewire\Attributes\Url;
 use Livewire\Component;
 use VentureDrake\LaravelCrm\Livewire\Whatsapp\Concerns\ResolvesWhatsappTenant;
 use VentureDrake\LaravelCrm\Models\TenantWhatsappAccount;
@@ -13,12 +14,20 @@ class WhatsappDashboard extends Component
 {
     use ResolvesWhatsappTenant;
 
+    #[Url(as: 'tenant')]
+    public ?int $tenantId = null;
+
     public function render()
     {
+        $this->syncSelectedTenant();
+
         $tenant = $this->currentTenant();
 
         return view('laravel-crm::livewire.whatsapp.dashboard', [
             'tenant' => $tenant,
+            'availableTenants' => $this->availableTenants(),
+            'tenantRole' => $this->currentTenantRole(),
+            'canManage' => $this->canManageCurrentTenant(),
             'account' => $tenant ? TenantWhatsappAccount::where('tenant_id', $tenant->id)->latest()->first() : null,
             'conversationCount' => $tenant ? WhatsappConversation::where('tenant_id', $tenant->id)->count() : 0,
             'openConversationCount' => $tenant ? WhatsappConversation::where('tenant_id', $tenant->id)->where('status', 'open')->count() : 0,

@@ -10,6 +10,11 @@ use VentureDrake\LaravelCrm\Http\Controllers\Api\V2\OrganizationController;
 use VentureDrake\LaravelCrm\Http\Controllers\Api\V2\PersonController;
 use VentureDrake\LaravelCrm\Http\Controllers\Api\V2\ProductController;
 use VentureDrake\LaravelCrm\Http\Controllers\Api\V2\QuoteController;
+use VentureDrake\LaravelCrm\Http\Controllers\Api\V2\TenantController;
+use VentureDrake\LaravelCrm\Http\Controllers\Api\V2\WhatsappAccountController;
+use VentureDrake\LaravelCrm\Http\Controllers\Api\V2\WhatsappConversationController;
+use VentureDrake\LaravelCrm\Http\Controllers\Api\V2\WhatsappController;
+use VentureDrake\LaravelCrm\Http\Controllers\Api\V2\WhatsappEventController;
 
 /*
  * Laravel CRM API routes (v2).
@@ -30,6 +35,38 @@ Route::middleware(['auth:sanctum', 'crm-api', 'laravel-crm.api.team'])->group(fu
 
     Route::delete('auth/token', [AuthController::class, 'revokeToken'])
         ->name('laravel-crm.api.v2.auth.token.revoke');
+
+    Route::get('tenants', [TenantController::class, 'index'])
+        ->name('laravel-crm.api.v2.tenants.index');
+
+    Route::prefix('whatsapp')->group(function () {
+        Route::get('summary', [WhatsappController::class, 'summary'])
+            ->name('laravel-crm.api.v2.whatsapp.summary');
+
+        Route::get('accounts', [WhatsappAccountController::class, 'index'])
+            ->name('laravel-crm.api.v2.whatsapp.accounts.index');
+
+        Route::post('accounts', [WhatsappAccountController::class, 'store'])
+            ->name('laravel-crm.api.v2.whatsapp.accounts.store');
+
+        Route::get('accounts/{account}', [WhatsappAccountController::class, 'show'])
+            ->name('laravel-crm.api.v2.whatsapp.accounts.show');
+
+        Route::match(['put', 'patch'], 'accounts/{account}', [WhatsappAccountController::class, 'update'])
+            ->name('laravel-crm.api.v2.whatsapp.accounts.update');
+
+        Route::delete('accounts/{account}', [WhatsappAccountController::class, 'destroy'])
+            ->name('laravel-crm.api.v2.whatsapp.accounts.destroy');
+
+        Route::get('conversations', [WhatsappConversationController::class, 'index'])
+            ->name('laravel-crm.api.v2.whatsapp.conversations.index');
+
+        Route::get('conversations/{conversation}', [WhatsappConversationController::class, 'show'])
+            ->name('laravel-crm.api.v2.whatsapp.conversations.show');
+
+        Route::get('events', [WhatsappEventController::class, 'index'])
+            ->name('laravel-crm.api.v2.whatsapp.events.index');
+    });
 
     Route::apiResource('leads', LeadController::class)
         ->names('laravel-crm.api.v2.leads')

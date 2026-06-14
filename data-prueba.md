@@ -41,6 +41,40 @@ Acceso: admincrm1.qpsecure.cloud/crm/login
 Notas: usuario creado automaticamente por php artisan laravelcrm:install
 ```
 
+## Credenciales demo de `server-test`
+
+Si `CRM_SEED_SERVER_TEST_DEMO=true`, el bootstrap ahora carga tambien un seeder
+de prueba para `server-test` con estos accesos:
+
+```text
+Owner:
+CRM_OWNER_EMAIL
+CRM_OWNER_PASSWORD
+
+Admin:
+opsadmincrm1@qpsecure.cloud
+CRM_DEMO_PASSWORD
+
+Manager:
+managercrm1@qpsecure.cloud
+CRM_DEMO_PASSWORD
+
+Agent:
+salescrm1@qpsecure.cloud
+CRM_DEMO_PASSWORD
+
+API tester:
+apitestercrm1@qpsecure.cloud
+CRM_DEMO_PASSWORD
+```
+
+Tenant demo:
+
+```text
+Slug: qpsecure-server-test
+Nombre: QP Secure Server Test
+```
+
 ## Credenciales demo conocidas de `local-test`
 
 Estas credenciales existen en el entorno local reproducible y en los seeders
@@ -64,21 +98,8 @@ Uso previsto:
 
 ## Estado actual de multiples niveles de usuario
 
-Hoy `server-test` no garantiza automaticamente estos perfiles:
-
-```text
-Admin
-Manager
-Agent
-API tester
-```
-
-Para tenerlos en servidor hace falta una tarea separada:
-
-- crear seeder de usuarios
-- asignar roles CRM
-- asociar usuarios al tenant demo
-- documentar credenciales definitivas aqui
+Con el seeder de `server-test`, estos perfiles ya pueden quedar cargados en el
+primer bootstrap cuando `CRM_SEED_SERVER_TEST_DEMO=true`.
 
 ## Tenant demo relacionado
 

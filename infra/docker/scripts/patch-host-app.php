@@ -11,6 +11,7 @@ $appPath = rtrim($argv[1], '/');
 $userModelPath = $appPath.'/app/Models/User.php';
 $bootstrapPath = $appPath.'/bootstrap/app.php';
 $corsPath = $appPath.'/config/cors.php';
+$routesPath = $appPath.'/routes/web.php';
 
 if (! is_file($userModelPath)) {
     fwrite(STDERR, "User model not found at {$userModelPath}\n");
@@ -100,7 +101,7 @@ return [
 
     'allowed_origins' => array_values(array_filter(array_map(
         static fn (string $origin): string => trim($origin),
-        explode(',', env('CORS_ALLOWED_ORIGINS', 'https://crm1.qpsecure.cloud,https://crmapi.qpsecure.cloud,https://crm1app.qpsecure.cloud,https://admincrm1.qpsecure.cloud'))
+        explode(',', env('CORS_ALLOWED_ORIGINS', 'https://admincrm1.qpsecure.cloud,https://crm1.qpsecure.cloud,https://crmapi.qpsecure.cloud'))
     ))),
 
     'allowed_origins_patterns' => [],
@@ -123,6 +124,22 @@ return [
 PHP;
 
 file_put_contents($corsPath, $corsConfig.PHP_EOL);
+
+$routesConfig = <<<'PHP'
+<?php
+
+use Illuminate\Support\Facades\Route;
+
+Route::get('/', function () {
+    $target = rtrim((string) env('CRM_ROOT_REDIRECT_URL', rtrim((string) env('APP_URL', ''), '/').'/crm'), '/');
+
+    return redirect()->away($target);
+});
+PHP;
+
+if (is_file($routesPath)) {
+    file_put_contents($routesPath, $routesConfig.PHP_EOL);
+}
 
 if (is_file($bootstrapPath)) {
     $bootstrap = file_get_contents($bootstrapPath);
