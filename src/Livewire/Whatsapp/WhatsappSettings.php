@@ -17,6 +17,8 @@ class WhatsappSettings extends Component
         return view('laravel-crm::livewire.whatsapp.settings', [
             'tenant' => $tenant,
             'account' => $tenant ? TenantWhatsappAccount::where('tenant_id', $tenant->id)->latest()->first() : null,
+            'callbackUrl' => url(config('meta-whatsapp.webhook.path', '/webhooks/meta/whatsapp')),
+            'signatureRequired' => (bool) config('meta-whatsapp.webhook.require_signature'),
         ]);
     }
 }

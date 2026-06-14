@@ -27,4 +27,9 @@ class WhatsappMessage extends Model
     {
         return $this->belongsTo(WhatsappConversation::class, 'whatsapp_conversation_id');
     }
+
+    public function webhookEvent(): BelongsTo
+    {
+        return $this->belongsTo(WhatsappWebhookEvent::class, 'whatsapp_webhook_event_id');
+    }
 }

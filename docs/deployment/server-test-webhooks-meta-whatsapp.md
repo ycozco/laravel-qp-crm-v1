@@ -33,14 +33,14 @@ Ejemplo recomendado:
 
 ```text
 https://crm.midominio.com/crm
-https://crm.midominio.com/api/webhooks/meta/whatsapp
+https://crm.midominio.com/webhooks/meta/whatsapp
 ```
 
 Para desarrollo local se conserva:
 
 ```text
 http://127.0.0.1:8088/crm
-http://127.0.0.1:8088/api/webhooks/meta/whatsapp
+http://127.0.0.1:8088/webhooks/meta/whatsapp
 ```
 
 ## Variables de entorno requeridas
@@ -60,7 +60,9 @@ META_WHATSAPP_GRAPH_VERSION=v21.0
 META_WHATSAPP_APP_ID=
 META_WHATSAPP_APP_SECRET=
 META_WHATSAPP_WEBHOOK_VERIFY_TOKEN=
-META_WHATSAPP_WEBHOOK_PATH=/api/webhooks/meta/whatsapp
+META_WHATSAPP_WEBHOOK_PATH=/webhooks/meta/whatsapp
+META_WHATSAPP_WEBHOOK_REQUIRE_SIGNATURE=true
+META_WHATSAPP_WEBHOOK_ALLOW_FALLBACK_TENANT=false
 ```
 
 Regla: los access tokens por tenant no deben vivir en `.env`. Deben guardarse cifrados por tenant en base de datos.
@@ -72,7 +74,7 @@ Regla: los access tokens por tenant no deben vivir en `.env`. Deben guardarse ci
 Ruta:
 
 ```text
-GET /api/webhooks/meta/whatsapp
+GET /webhooks/meta/whatsapp
 ```
 
 Responsabilidad:
@@ -91,7 +93,7 @@ Responder HTTP 403 si no coincide
 Ruta:
 
 ```text
-POST /api/webhooks/meta/whatsapp
+POST /webhooks/meta/whatsapp
 ```
 
 Responsabilidad:
@@ -105,7 +107,24 @@ Resolver tenant asociado
 Crear o actualizar conversacion
 Guardar mensajes entrantes
 Guardar estados de mensajes enviados
+Guardar errores de Meta en mensajes y eventos
 No guardar eventos sin tenant_id salvo en tabla de errores/auditoria
+```
+
+## Estado implementado en server-test
+
+```text
+[x] Endpoint publico configurable por META_WHATSAPP_WEBHOOK_PATH
+[x] GET hub.challenge con META_WHATSAPP_WEBHOOK_VERIFY_TOKEN o token por cuenta
+[x] POST JSON para eventos messages, statuses, history y account events genericos
+[x] Validacion X-Hub-Signature-256 cuando META_WHATSAPP_APP_SECRET existe
+[x] Modo estricto con META_WHATSAPP_WEBHOOK_REQUIRE_SIGNATURE=true
+[x] Resolucion tenant por metadata.phone_number_id o WABA id
+[x] Registro bruto en whatsapp_webhook_events
+[x] Creacion/actualizacion de conversaciones y mensajes inbound/outbound
+[x] Actualizacion de estados sent/delivered/read/failed
+[x] Captura de errores Meta en error_code, error_title y error_details
+[x] Frontend muestra callback URL, firma, eventos, conteo procesado y errores
 ```
 
 ## Tablas minimas
@@ -172,13 +191,16 @@ pending
 
 ```text
 id
-tenant_id nullable
+tenant_id
+tenant_whatsapp_account_id nullable
 phone_number_id nullable
-waba_id nullable
 event_type
+field nullable
 payload_json
 signature_valid
 processed_at nullable
+processed_count
+processing_status
 error_message nullable
 created_at
 updated_at
@@ -204,14 +226,17 @@ updated_at
 id
 tenant_id
 conversation_id
+webhook_event_id nullable
 meta_message_id nullable
 direction
 type
 body nullable
 payload_json
 status
+error_code nullable
+error_title nullable
+error_details nullable
 sent_at nullable
-received_at nullable
 created_at
 updated_at
 ```
@@ -258,7 +283,7 @@ GET /crm/whatsapp
 GET /crm/whatsapp/settings
 GET /crm/whatsapp/conversations
 GET /crm/whatsapp/conversations/{conversation}
-POST /crm/whatsapp/conversations/{conversation}/messages
+GET /crm/whatsapp/events
 ```
 
 Primera version de UI:
@@ -269,7 +294,7 @@ Estado conectado/desconectado
 Listado de eventos recibidos
 Bandeja simple de conversaciones
 Detalle de mensajes
-Formulario para enviar texto simple
+Errores de Meta visibles en detalle de conversacion y eventos
 ```
 
 ## API interna de envio
@@ -303,7 +328,7 @@ APP_DEBUG=false
 Firma X-Hub-Signature-256 validada
 Tokens cifrados con Crypt::encryptString
 Nunca imprimir tokens completos en logs
-Rate limit para /api/webhooks/meta/whatsapp
+Rate limit para /webhooks/meta/whatsapp
 Logs separados para eventos webhook
 Todas las consultas WhatsApp filtradas por tenant_id
 No mezclar datos entre tenants
@@ -358,35 +383,35 @@ En servidor real, el trafico publico debe entrar por Nginx Proxy Manager o Nginx
 ### Fase 2 - Webhook Meta minimo
 
 ```text
-[ ] Crear config/meta-whatsapp.php en host si no existe
-[ ] Crear MetaWhatsappWebhookController
-[ ] Registrar GET /api/webhooks/meta/whatsapp
-[ ] Registrar POST /api/webhooks/meta/whatsapp
-[ ] Validar hub.challenge
-[ ] Guardar payloads en whatsapp_webhook_events
+[x] Crear config/meta-whatsapp.php en host si no existe
+[x] Crear WhatsappWebhookController
+[x] Registrar GET /webhooks/meta/whatsapp
+[x] Registrar POST /webhooks/meta/whatsapp
+[x] Validar hub.challenge
+[x] Guardar payloads en whatsapp_webhook_events
 [ ] Agregar tests feature para GET y POST
 ```
 
 ### Fase 3 - Tenant WhatsApp
 
 ```text
-[ ] Crear tenants
-[ ] Crear tenant_users
-[ ] Crear tenant_whatsapp_accounts
-[ ] Asociar usuario actual a tenant demo
-[ ] Resolver tenant por phone_number_id
+[x] Crear tenants
+[x] Crear tenant_users
+[x] Crear tenant_whatsapp_accounts
+[x] Asociar usuario actual a tenant demo
+[x] Resolver tenant por phone_number_id
 [ ] Bloquear eventos sin tenant con auditoria
 ```
 
 ### Fase 4 - Bandeja simple
 
 ```text
-[ ] Crear whatsapp_conversations
-[ ] Crear whatsapp_messages
-[ ] Procesar mensajes inbound desde webhook
-[ ] Procesar status updates desde webhook
-[ ] Pantalla /crm/whatsapp
-[ ] Pantalla detalle de conversacion
+[x] Crear whatsapp_conversations
+[x] Crear whatsapp_messages
+[x] Procesar mensajes inbound desde webhook
+[x] Procesar status updates desde webhook
+[x] Pantalla /crm/whatsapp
+[x] Pantalla detalle de conversacion
 ```
 
 ### Fase 5 - Envio de mensajes
@@ -396,7 +421,7 @@ En servidor real, el trafico publico debe entrar por Nginx Proxy Manager o Nginx
 [ ] Enviar texto simple
 [ ] Guardar respuesta de Meta
 [ ] Actualizar status cuando llegue webhook
-[ ] Mostrar errores de envio en UI
+[x] Mostrar errores de envio/status en UI cuando llegan por webhook
 ```
 
 ### Fase 6 - Preparacion Meta Review
@@ -433,9 +458,9 @@ Minimo para presionar "Verificar y guardar" en Meta:
 
 ```text
 [ ] URL publica HTTPS del webhook
-[ ] GET responde hub.challenge
-[ ] POST responde 200
-[ ] Logs confirman recepcion
+[x] GET responde hub.challenge
+[x] POST responde 200
+[x] Eventos confirman recepcion en CRM
 [ ] Verify token coincide con Meta
 ```
 
