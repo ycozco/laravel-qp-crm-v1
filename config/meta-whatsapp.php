@@ -7,8 +7,9 @@ return [
     | Meta WhatsApp Cloud API
     |--------------------------------------------------------------------------
     |
-    | This file only defines the host-app defaults needed to start a future
-    | WhatsApp integration. It does not implement message sending yet.
+    | This file defines the host-app defaults for the WhatsApp integration.
+    | Message sending and Embedded Signup are still intentionally outside the
+    | MVP, but webhook verification and event capture are implemented.
     |
     | IMPORTANT FOR SAAS:
     | Tenant-specific access tokens must not be stored here. Store each tenant
@@ -54,6 +55,10 @@ return [
     | META_WHATSAPP_WEBHOOK_VERIFY_TOKEN is the token Meta sends to verify the
     | GET webhook challenge. It can be global for the app.
     |
+    | META_WHATSAPP_WEBHOOK_REQUIRE_SIGNATURE should be true in server tests
+    | and production once META_WHATSAPP_APP_SECRET is configured. It can stay
+    | false locally to accept Meta dashboard test payloads without a signature.
+    |
     | The POST webhook must resolve the tenant from the incoming payload,
     | usually by `metadata.phone_number_id` or `metadata.display_phone_number`.
     |
@@ -62,6 +67,8 @@ return [
     'webhook' => [
         'path' => env('META_WHATSAPP_WEBHOOK_PATH', '/webhooks/meta/whatsapp'),
         'verify_token' => env('META_WHATSAPP_WEBHOOK_VERIFY_TOKEN'),
+        'require_signature' => env('META_WHATSAPP_WEBHOOK_REQUIRE_SIGNATURE', false),
+        'allow_fallback_tenant' => env('META_WHATSAPP_WEBHOOK_ALLOW_FALLBACK_TENANT', true),
     ],
 
     /*

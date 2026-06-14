@@ -817,6 +817,7 @@ class LaravelCrmServiceProvider extends ServiceProvider
                 __DIR__.'/../database/migrations/add_views_count_to_laravel_crm_features_table.php.stub' => $this->getMigrationFileName($filesystem, 'add_views_count_to_laravel_crm_features_table.php', 133),
                 __DIR__.'/../database/migrations/create_laravel_crm_feature_views_table.php.stub' => $this->getMigrationFileName($filesystem, 'create_laravel_crm_feature_views_table.php', 134),
                 __DIR__.'/../database/migrations/create_laravel_crm_whatsapp_tables.php.stub' => $this->getMigrationFileName($filesystem, 'create_laravel_crm_whatsapp_tables.php', 135),
+                __DIR__.'/../database/migrations/enhance_laravel_crm_whatsapp_webhook_tables.php.stub' => $this->getMigrationFileName($filesystem, 'enhance_laravel_crm_whatsapp_webhook_tables.php', 136),
             ], 'migrations');
 
             // Publishing the seeders
@@ -1322,6 +1323,14 @@ class LaravelCrmServiceProvider extends ServiceProvider
         Route::group(['domain' => null, 'prefix' => null, 'middleware' => []], function () {
             if (config('laravel-crm.user_interface')) {
                 $this->loadRoutesFrom(__DIR__.'/Http/email-tracking-routes.php');
+            }
+        });
+
+        // Meta WhatsApp webhooks are public and CSRF-free. Meta verifies them
+        // with GET and delivers signed JSON payloads by POST.
+        Route::group(['domain' => null, 'prefix' => null, 'middleware' => []], function () {
+            if (config('laravel-crm.user_interface')) {
+                $this->loadRoutesFrom(__DIR__.'/Http/webhook-routes.php');
             }
         });
 

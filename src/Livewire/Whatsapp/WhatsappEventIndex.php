@@ -16,7 +16,15 @@ class WhatsappEventIndex extends Component
     #[Url]
     public string $search = '';
 
+    #[Url]
+    public string $status = '';
+
     public function updatedSearch(): void
+    {
+        $this->resetPage();
+    }
+
+    public function updatedStatus(): void
     {
         $this->resetPage();
     }
@@ -30,9 +38,12 @@ class WhatsappEventIndex extends Component
             ->when($this->search, function (Builder $query) {
                 $query->where(function (Builder $search) {
                     $search->where('event_type', 'like', "%{$this->search}%")
+                        ->orWhere('field', 'like', "%{$this->search}%")
+                        ->orWhere('phone_number_id', 'like', "%{$this->search}%")
                         ->orWhere('meta_object_id', 'like', "%{$this->search}%");
                 });
             })
+            ->when($this->status, fn (Builder $query) => $query->where('processing_status', $this->status))
             ->latest('received_at')
             ->paginate(15);
 

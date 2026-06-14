@@ -24,4 +24,9 @@ class WhatsappWebhookEvent extends Model
     {
         return $this->belongsTo(Tenant::class);
     }
+
+    public function account(): BelongsTo
+    {
+        return $this->belongsTo(TenantWhatsappAccount::class, 'tenant_whatsapp_account_id');
+    }
 }

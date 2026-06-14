@@ -18,6 +18,11 @@
                         {{ $message->body }}
                     </div>
                     <div class="chat-footer text-xs text-base-content/60">{{ ucfirst($message->status) }}</div>
+                    @if($message->error_code || $message->error_title || $message->error_details)
+                        <div class="mt-1 text-xs text-error max-w-xl">
+                            {{ $message->error_code }} {{ $message->error_title }} {{ $message->error_details }}
+                        </div>
+                    @endif
                 </div>
             @empty
                 <p class="text-sm text-base-content/60">No hay mensajes registrados.</p>
