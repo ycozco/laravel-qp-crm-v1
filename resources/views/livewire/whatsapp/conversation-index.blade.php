@@ -15,6 +15,18 @@
 
     @include('laravel-crm::livewire.whatsapp.partials.nav')
 
+    <div class="grid gap-4 md:grid-cols-3 mb-4">
+        <x-mary-card title="Vista" shadow separator>
+            <p class="text-sm text-base-content/70">Listado de conversaciones por tenant con filtro por estado y busqueda por contacto o telefono.</p>
+        </x-mary-card>
+        <x-mary-card title="Filtro actual" shadow separator>
+            <p class="text-sm text-base-content/70">{{ $status ? 'Estado: '.ucfirst($status) : 'Mostrando todos los estados.' }}</p>
+        </x-mary-card>
+        <x-mary-card title="Busqueda" shadow separator>
+            <p class="text-sm text-base-content/70">{{ filled($search) ? 'Busqueda activa: '.$search : 'Sin texto de busqueda aplicado.' }}</p>
+        </x-mary-card>
+    </div>
+
     <x-mary-card shadow>
         <div class="overflow-x-auto">
             <table class="table">

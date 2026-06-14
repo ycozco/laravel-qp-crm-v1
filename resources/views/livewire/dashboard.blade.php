@@ -20,7 +20,7 @@
     </x-mary-header>
 
     {{-- KPI STATS ROW 1 --}}
-    <div class="grid lg:grid-cols-4 gap-4 mb-6">
+    <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-4 mb-6">
         @hasleadsenabled
             <x-mary-stat
                 title="{{ ucfirst(__('laravel-crm::lang.new_leads')) }}"
@@ -67,7 +67,7 @@
     </div>
 
     {{-- KPI STATS ROW 2 --}}
-    <div class="grid lg:grid-cols-4 gap-4 mb-6">
+    <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-4 mb-6">
         @hasinvoicesenabled
             <x-mary-stat
                 title="{{ ucfirst(__('laravel-crm::lang.invoices')) }} {{ ucfirst(__('laravel-crm::lang.paid')) }}"
@@ -112,7 +112,7 @@
     </div>
 
     {{-- CHARTS ROW 1: Revenue + Pipeline --}}
-    <div class="grid lg:grid-cols-2 gap-6 mb-6">
+    <div class="grid gap-6 xl:grid-cols-2 mb-6">
         @hasinvoicesenabled
             <x-mary-card title="{{ ucfirst(__('laravel-crm::lang.revenue')) }}" shadow separator>
                 <div class="h-72">
@@ -131,7 +131,7 @@
     </div>
 
     {{-- CHARTS ROW 2: Leads vs Deals + Deal Status --}}
-    <div class="grid lg:grid-cols-2 gap-6 mb-6">
+    <div class="grid gap-6 xl:grid-cols-2 mb-6">
         @hasleadsenabled
             <x-mary-card title="{{ ucfirst(__('laravel-crm::lang.leads')) }} vs {{ ucfirst(__('laravel-crm::lang.deals')) }}" shadow separator>
                 <div class="h-72">
@@ -150,9 +150,9 @@
     </div>
 
     {{-- BOTTOM ROW: Tasks + Activity --}}
-    <div class="grid lg:grid-cols-2 gap-6">
+    <div class="grid gap-6 xl:grid-cols-2">
         {{-- Upcoming Tasks --}}
-        <x-mary-card title="{{ ucfirst(__('laravel-crm::lang.upcoming')) }} {{ ucfirst(__('laravel-crm::lang.tasks')) }}" shadow separator>
+        <x-mary-card title="{{ ucfirst(__('laravel-crm::lang.upcoming')) }} {{ ucfirst(__('laravel-crm::lang.tasks')) }}" shadow separator class="h-full">
             @if($this->overdueTasksCount > 0)
                 <x-mary-alert icon="o-exclamation-triangle" class="alert-warning mb-4">
                     {{ $this->overdueTasksCount }} {{ strtolower(__('laravel-crm::lang.overdue')) }} {{ strtolower(__('laravel-crm::lang.tasks')) }}
@@ -190,7 +190,7 @@
         </x-mary-card>
 
         {{-- Recent Activity --}}
-        <x-mary-card title="{{ ucfirst(__('laravel-crm::lang.recent')) }} {{ ucfirst(__('laravel-crm::lang.activity')) }}" shadow separator>
+        <x-mary-card title="{{ ucfirst(__('laravel-crm::lang.recent')) }} {{ ucfirst(__('laravel-crm::lang.activity')) }}" shadow separator class="h-full">
             @forelse($this->recentActivities as $activity)
                 <div class="flex items-start gap-3 py-3 {{ !$loop->last ? 'border-b border-base-200' : '' }}">
                     @php
@@ -240,4 +240,3 @@
         </x-mary-card>
     </div>
 </div>
-

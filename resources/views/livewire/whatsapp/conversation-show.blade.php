@@ -7,6 +7,12 @@
 
     @include('laravel-crm::livewire.whatsapp.partials.nav')
 
+    <div class="grid gap-4 md:grid-cols-3 mb-4">
+        <x-mary-stat title="Contacto" value="{{ $conversation->contact_name ?? 'Sin nombre' }}" icon="o-user" color="text-primary" description="{{ $conversation->contact_phone }}" class="shadow-sm" />
+        <x-mary-stat title="Estado" value="{{ ucfirst($conversation->status) }}" icon="o-chat-bubble-left-right" color="{{ $conversation->status === 'open' ? 'text-success' : 'text-warning' }}" description="Conversacion actual" class="shadow-sm" />
+        <x-mary-stat title="Mensajes" value="{{ $messages->count() }}" icon="o-envelope" color="text-info" description="Cargados en esta vista" class="shadow-sm" />
+    </div>
+
     <x-mary-card title="Mensajes" shadow separator>
         <div class="space-y-4">
             @forelse($messages as $message)

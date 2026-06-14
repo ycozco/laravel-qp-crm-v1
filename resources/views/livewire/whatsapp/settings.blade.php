@@ -36,6 +36,17 @@
                         <li><code>META_WHATSAPP_APP_SECRET</code> en entorno</li>
                     </ul>
                 </div>
+
+                <div class="rounded-md border border-base-content/10 p-4 text-sm">
+                    <h3 class="font-semibold mb-3">Orden de configuracion</h3>
+                    <ol class="list-decimal pl-5 space-y-1 text-base-content/75">
+                        <li>Crear o seleccionar el tenant.</li>
+                        <li>Registrar la cuenta WhatsApp Business con sus IDs.</li>
+                        <li>Guardar <code>verify token</code> y <code>access token</code>.</li>
+                        <li>Configurar en Meta el callback URL mostrado en esta pantalla.</li>
+                        <li>Probar verificacion GET y luego recepcion POST.</li>
+                    </ol>
+                </div>
             </div>
         </x-mary-card>
 
@@ -83,7 +94,7 @@
                 @endunless
 
                 <div class="flex items-center justify-between gap-4 mb-4">
-                    <p class="text-sm text-base-content/70">Puedes registrar varias cuentas por tenant y elegir cual editar desde la lista.</p>
+                    <p class="text-sm text-base-content/70">Puedes registrar varias cuentas por tenant y elegir cual editar desde la lista. El token de acceso solo se reemplaza si vuelves a escribirlo.</p>
                     @if($canManage)
                         <x-mary-button label="Nueva cuenta" icon="o-plus" wire:click="startAccountCreate" class="btn-outline" />
                     @endif
@@ -123,25 +134,36 @@
                     </table>
                 </div>
 
-                <div class="grid gap-4 md:grid-cols-2">
-                    <x-mary-input label="Display name" wire:model.defer="display_name" />
-                    <x-mary-input label="Business account ID" wire:model.defer="business_account_id" />
-                    <x-mary-input label="Phone number ID" wire:model.defer="phone_number_id" />
-                    <x-mary-input label="Telefono" wire:model.defer="phone_number" />
-                    <x-mary-input label="App ID" wire:model.defer="app_id" />
-                    <x-mary-input label="Verify token" wire:model.defer="webhook_verify_token" />
-                    <x-mary-input type="password" label="Access token" wire:model.defer="access_token" hint="Solo se sobreescribe si escribes un nuevo valor." />
-                    <label class="form-control">
-                        <div class="label"><span class="label-text">Estado</span></div>
-                        <select wire:model.defer="status" class="select select-bordered">
-                            <option value="pending">Pending</option>
-                            <option value="connected">Connected</option>
-                            <option value="error">Error</option>
-                            <option value="disabled">Disabled</option>
-                        </select>
-                    </label>
-                    <div class="md:col-span-2">
-                        <x-mary-textarea label="Ultimo error" wire:model.defer="last_error" rows="3" />
+                <div class="grid gap-4 xl:grid-cols-2">
+                    <div class="space-y-4 rounded-xl border border-base-content/10 p-4">
+                        <h3 class="text-sm font-semibold uppercase tracking-wide text-base-content/70">Identificadores Meta</h3>
+                        <div class="grid gap-4 md:grid-cols-2">
+                            <x-mary-input label="Display name" wire:model.defer="display_name" />
+                            <x-mary-input label="App ID" wire:model.defer="app_id" />
+                            <x-mary-input label="Business account ID" wire:model.defer="business_account_id" />
+                            <x-mary-input label="Phone number ID" wire:model.defer="phone_number_id" />
+                            <div class="md:col-span-2">
+                                <x-mary-input label="Telefono" wire:model.defer="phone_number" />
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="space-y-4 rounded-xl border border-base-content/10 p-4">
+                        <h3 class="text-sm font-semibold uppercase tracking-wide text-base-content/70">Seguridad y estado</h3>
+                        <div class="grid gap-4">
+                            <x-mary-input label="Verify token" wire:model.defer="webhook_verify_token" hint="Debe coincidir con el valor usado en Meta al verificar el webhook." />
+                            <x-mary-input type="password" label="Access token" wire:model.defer="access_token" hint="Solo se sobreescribe si escribes un nuevo valor." />
+                            <label class="form-control">
+                                <div class="label"><span class="label-text">Estado</span></div>
+                                <select wire:model.defer="status" class="select select-bordered">
+                                    <option value="pending">Pending</option>
+                                    <option value="connected">Connected</option>
+                                    <option value="error">Error</option>
+                                    <option value="disabled">Disabled</option>
+                                </select>
+                            </label>
+                            <x-mary-textarea label="Ultimo error" wire:model.defer="last_error" rows="3" />
+                        </div>
                     </div>
                 </div>
 

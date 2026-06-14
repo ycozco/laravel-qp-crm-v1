@@ -27,14 +27,17 @@
     </head>
     <body class="font-sans antialiased bg-base-200">
     
-    <x-mary-nav sticky full-width>
+    <x-mary-nav sticky full-width class="border-b border-base-content/10 bg-base-100/95 backdrop-blur">
         <x-slot:brand>
             <label for="main-drawer" class="lg:hidden mr-3">
                 <x-mary-icon name="o-bars-3" class="cursor-pointer" />
             </label>
             <x-mary-popover>
                 <x-slot:trigger>
-                    <a class="navbar-brand text-2xl font-extrabold" href="{{ url(route('laravel-crm.dashboard')) }}" @can('view crm updates')data-toggle="tooltip" data-placement="bottom" title="v{{ config('laravel-crm.version') }}"@endcan><img src="{{ asset('vendor/laravel-crm/img/laravel-crm-logo.png') }}" width="215" class="block dark:hidden" /> <img src="{{ asset('vendor/laravel-crm/img/laravel-crm-dark-logo.png') }}" width="215" class="hidden dark:inline" /> </a>
+                    <a class="navbar-brand flex items-center gap-3 text-2xl font-extrabold" href="{{ url(route('laravel-crm.dashboard')) }}" @can('view crm updates')data-toggle="tooltip" data-placement="bottom" title="v{{ config('laravel-crm.version') }}"@endcan>
+                        <img src="{{ asset('vendor/laravel-crm/img/laravel-crm-logo.png') }}" width="215" class="block dark:hidden" />
+                        <img src="{{ asset('vendor/laravel-crm/img/laravel-crm-dark-logo.png') }}" width="215" class="hidden dark:inline" />
+                    </a>
                 </x-slot:trigger>
                 <x-slot:content>
                     Version {{ config('laravel-crm.version') }} <br>
@@ -52,6 +55,9 @@
         </x-slot:brand>
         
         <x-slot:actions>
+            <div class="hidden xl:flex items-center rounded-full border border-base-content/10 bg-base-200 px-3 py-1 text-xs font-medium uppercase tracking-[0.2em] text-base-content/60">
+                CRM interno
+            </div>
             {{--<x-mary-input icon="o-magnifying-glass" placeholder="Search..." />--}}
             {{--<x-mary-button label="Messages" icon="o-envelope" link="###" class="btn-ghost btn-sm" responsive />
             <x-mary-button label="Notifications" icon="o-bell" link="###" class="btn-ghost btn-sm" responsive />--}}
@@ -83,10 +89,15 @@
         <x-slot:sidebar drawer="main-drawer" collapsible class="bg-base-200">
 
             {{-- Activates the menu item when a route matches the `link` property --}}
-            <x-mary-menu activate-by-route class="w-full bg-base-100 rounded-none pt-3">
+            <x-mary-menu activate-by-route class="w-full bg-base-100 rounded-2xl border border-base-content/10 p-3 shadow-sm">
+                <div class="px-3 pb-2">
+                    <div class="text-xs font-semibold uppercase tracking-[0.24em] text-base-content/45">Panel</div>
+                </div>
                 <x-mary-menu-item title="{{ ucfirst(__('laravel-crm::lang.dashboard')) }}" icon="bxs.dashboard" link="{{ url(route('laravel-crm.dashboard')) }}" />
 
-                <hr class="my-2 border-t-[length:var(--border)] border-base-content/10">
+                <div class="px-3 pt-4 pb-2">
+                    <div class="text-xs font-semibold uppercase tracking-[0.24em] text-base-content/45">Operacion</div>
+                </div>
 
                 @can('view crm tasks')
                     <x-mary-menu-item title="{{ ucfirst(__('laravel-crm::lang.tasks')) }}" icon="fas.tasks" link="{{ url(route('laravel-crm.tasks.index')) }}" />
@@ -116,7 +127,9 @@
                     <x-mary-menu-item title="{{ ucfirst(__('laravel-crm::lang.activity')) }}" icon="fas.timeline" link="{{ url(route('laravel-crm.activities.index')) }}" />
                 @endcanany
 
-                <hr class="my-2 border-t-[length:var(--border)] border-base-content/10">
+                <div class="px-3 pt-4 pb-2">
+                    <div class="text-xs font-semibold uppercase tracking-[0.24em] text-base-content/45">Comercial</div>
+                </div>
 
                 @hasleadsenabled
                     @can('view crm leads')
@@ -136,7 +149,9 @@
                     @endcan
                 @endhasquotesenabled
 
-                <hr class="my-2 border-t-[length:var(--border)] border-base-content/10">
+                <div class="px-3 pt-4 pb-2">
+                    <div class="text-xs font-semibold uppercase tracking-[0.24em] text-base-content/45">Facturacion</div>
+                </div>
 
                 @hasordersenabled
                     @can('view crm orders')
@@ -162,7 +177,9 @@
                     @endcan
                 @endhaspurchaseordersenabled
 
-                <hr class="my-2 border-t-[length:var(--border)] border-base-content/10">
+                <div class="px-3 pt-4 pb-2">
+                    <div class="text-xs font-semibold uppercase tracking-[0.24em] text-base-content/45">Personas y equipos</div>
+                </div>
 
                 @can('view crm people')
                     <x-mary-menu-item title="{{ ucfirst(__('laravel-crm::lang.people')) }}" icon="fas.user-circle" link="{{ url(route('laravel-crm.people.index')) }}" />
@@ -182,7 +199,9 @@
                     @endcan
                 @endhasteamsenabled
                 
-                <hr class="my-2 border-t-[length:var(--border)] border-base-content/10">
+                <div class="px-3 pt-4 pb-2">
+                    <div class="text-xs font-semibold uppercase tracking-[0.24em] text-base-content/45">Catalogo y monitoreo</div>
+                </div>
                 @hasfeaturesenabled
                     @can('view crm features')
                     <x-mary-menu-item title="{{ ucfirst(__('laravel-crm::lang.features')) }}" icon="fas.lightbulb" link="{{ url(route('laravel-crm.features.index')) }}" />
@@ -203,7 +222,9 @@
                 @endcan
 
                 @canany(['view crm settings', 'view crm roles', 'view crm pipelines', 'view crm product categories', 'view crm tax rates', 'view crm labels', 'view crm lead sources', 'view crm fields', 'view crm integrations', 'manage crm chat widgets'])
-                    <x-mary-menu-separator />
+                    <div class="px-3 pt-4 pb-2">
+                        <div class="text-xs font-semibold uppercase tracking-[0.24em] text-base-content/45">Configuracion</div>
+                    </div>
                     <x-mary-menu-sub title="{{ ucfirst(__('laravel-crm::lang.settings')) }}" icon="fas.cog" link="###">
                         @can('view crm settings')
                             <x-mary-menu-item link="{{ url(route('laravel-crm.settings.edit')) }}" title="{{ ucwords(__('laravel-crm::lang.general_settings')) }}" />
@@ -243,6 +264,9 @@
                 @endcanany
 
                 @can('view crm updates')
+                    <div class="px-3 pt-4 pb-2">
+                        <div class="text-xs font-semibold uppercase tracking-[0.24em] text-base-content/45">Sistema</div>
+                    </div>
                     <x-mary-menu-item title="{{ ucfirst(__('laravel-crm::lang.updates')) }}" icon="fas.cloud-download-alt" link="{{ url(route('laravel-crm.updates.index')) }}" />
                 @endcan
 

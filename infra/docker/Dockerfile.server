@@ -46,11 +46,12 @@ RUN { \
 WORKDIR /opt/package
 COPY . /opt/package
 
-RUN composer create-project laravel/laravel /var/www/app "${LARAVEL_VERSION}" --no-interaction --prefer-dist \
+RUN composer create-project laravel/laravel /var/www/app "${LARAVEL_VERSION}" --no-interaction --prefer-dist --no-scripts \
     && cd /var/www/app \
     && composer config minimum-stability dev \
     && composer config prefer-stable true \
     && composer config repositories.local '{"type":"path","url":"/opt/package","options":{"symlink":false}}' \
+    && composer require nesbot/carbon:"<3.12" --no-interaction --with-all-dependencies \
     && composer require venturedrake/laravel-crm:"${PACKAGE_CONSTRAINT}" --no-interaction --with-all-dependencies \
     && php artisan vendor:publish --provider="VentureDrake\\LaravelCrm\\LaravelCrmServiceProvider" --tag=config --force \
     && php artisan vendor:publish --provider="VentureDrake\\LaravelCrm\\LaravelCrmServiceProvider" --tag=migrations --force \

@@ -302,6 +302,233 @@ HTTP 200
 {"success":true,"processed":N}
 ```
 
+## Flujo detallado de datos: API key, token y webhook
+
+### 1. Que credenciales existen de verdad en este proyecto
+
+No hay una sola `apikey` unica del lado CRM. El flujo actual separa:
+
+```text
+Credenciales globales de la app Meta
+- META_WHATSAPP_APP_ID
+- META_WHATSAPP_APP_SECRET
+- META_WHATSAPP_WEBHOOK_VERIFY_TOKEN
+
+Credenciales por tenant / cuenta WhatsApp Business
+- app_id
+- business_account_id
+- phone_number_id
+- phone_number
+- webhook_verify_token
+- access_token
+```
+
+Regla operativa:
+
+- `APP_SECRET` valida la firma `X-Hub-Signature-256`
+- `VERIFY_TOKEN` valida el challenge GET del webhook
+- `ACCESS_TOKEN` sirve para futuras llamadas salientes a Graph API
+- `phone_number_id` y `business_account_id` permiten resolver a que tenant
+  pertenece cada evento entrante
+
+### 2. Donde vive cada dato
+
+```text
+En .env.server-test
+- META_WHATSAPP_APP_ID
+- META_WHATSAPP_APP_SECRET
+- META_WHATSAPP_WEBHOOK_VERIFY_TOKEN
+- META_WHATSAPP_WEBHOOK_PATH
+- META_WHATSAPP_WEBHOOK_REQUIRE_SIGNATURE
+- META_WHATSAPP_WEBHOOK_ALLOW_FALLBACK_TENANT
+```
+
+```text
+En la base de datos del CRM por tenant / cuenta
+- display_name
+- app_id
+- business_account_id
+- phone_number_id
+- phone_number
+- webhook_verify_token
+- access_token_encrypted
+- status
+```
+
+### 3. Flujo completo de configuracion en server-test
+
+#### Paso A. Preparar entorno del backend
+
+Completar en `.env.server-test`:
+
+```text
+APP_URL=https://admincrm1.qpsecure.cloud
+META_WHATSAPP_ENABLED=true
+META_WHATSAPP_APP_ID=<meta-app-id>
+META_WHATSAPP_APP_SECRET=<meta-app-secret>
+META_WHATSAPP_WEBHOOK_VERIFY_TOKEN=<token-largo-y-unico>
+META_WHATSAPP_WEBHOOK_PATH=/webhooks/meta/whatsapp
+META_WHATSAPP_WEBHOOK_REQUIRE_SIGNATURE=true
+META_WHATSAPP_WEBHOOK_ALLOW_FALLBACK_TENANT=false
+```
+
+#### Paso B. Desplegar stack y publicar hosts
+
+Publicar en NPM:
+
+```text
+admincrm1.qpsecure.cloud -> crm1_web:80
+crmapi.qpsecure.cloud -> crm1_web:80
+```
+
+Con esto quedan expuestos:
+
+```text
+UI interna:
+https://admincrm1.qpsecure.cloud/crm/whatsapp/settings
+
+Webhook real:
+https://crmapi.qpsecure.cloud/webhooks/meta/whatsapp
+```
+
+#### Paso C. Registrar tenant y cuenta en el CRM
+
+Desde:
+
+```text
+https://admincrm1.qpsecure.cloud/crm/whatsapp/settings
+```
+
+Cargar:
+
+```text
+Tenant:
+- nombre
+- slug
+- estado
+
+Cuenta WhatsApp:
+- display name
+- app_id
+- business_account_id
+- phone_number_id
+- phone_number
+- webhook_verify_token
+- access_token
+- status=connected cuando quede validada
+```
+
+Nota:
+
+- `access_token` se guarda cifrado
+- `webhook_verify_token` puede coincidir con el global o ser especifico por
+  cuenta
+
+#### Paso D. Configurar Meta Developers
+
+En la app de Meta:
+
+```text
+Webhook callback URL
+https://crmapi.qpsecure.cloud/webhooks/meta/whatsapp
+
+Verify token
+<META_WHATSAPP_WEBHOOK_VERIFY_TOKEN o token de la cuenta>
+
+Campo suscrito
+messages
+```
+
+#### Paso E. Verificacion GET
+
+Meta enviara algo como:
+
+```text
+GET /webhooks/meta/whatsapp
+  ?hub.mode=subscribe
+  &hub.challenge=123456
+  &hub.verify_token=<token>
+```
+
+El backend:
+
+```text
+1. Lee hub.mode, hub.challenge y hub.verify_token
+2. Compara el token contra:
+   - config('meta-whatsapp.webhook.verify_token')
+   - o cualquier tenant_whatsapp_account.webhook_verify_token
+3. Si coincide responde 200 con el challenge plano
+4. Si no coincide responde 403
+```
+
+#### Paso F. Recepcion POST firmada
+
+Meta enviara:
+
+```text
+POST /webhooks/meta/whatsapp
+Header: X-Hub-Signature-256=sha256=...
+Body JSON con entry[].changes[]
+```
+
+El backend procesa asi:
+
+```text
+1. Valida la firma con META_WHATSAPP_APP_SECRET
+2. Lee entry.id y change.value.metadata.phone_number_id
+3. Busca la cuenta por:
+   - phone_number_id
+   - si no existe, business_account_id
+4. Resuelve el tenant propietario
+5. Guarda un registro en whatsapp_webhook_events
+6. Recorre:
+   - messages[]
+   - statuses[]
+   - history[].threads[].messages[]
+7. Crea o actualiza:
+   - conversaciones
+   - mensajes
+   - estados de entrega
+8. Responde:
+   {"success":true,"processed":N}
+```
+
+### 4. Flujo de datos resumido
+
+```text
+Meta Developers
+  -> GET challenge
+  -> POST webhook firmado
+
+Nginx Proxy Manager
+  -> crmapi.qpsecure.cloud
+
+crm1_web
+  -> /webhooks/meta/whatsapp
+  -> valida token / firma
+  -> resuelve tenant por phone_number_id o business_account_id
+  -> persiste eventos, conversaciones y mensajes en MySQL
+
+UI CRM interna
+  -> admincrm1.qpsecure.cloud/crm/whatsapp/settings
+  -> administra tenant, token y IDs de Meta
+```
+
+### 5. Checklist practico de configuracion
+
+```text
+[ ] APP_URL apunta a admincrm1.qpsecure.cloud
+[ ] META_WHATSAPP_APP_SECRET cargado en .env.server-test
+[ ] META_WHATSAPP_WEBHOOK_VERIFY_TOKEN cargado en .env.server-test
+[ ] crmapi.qpsecure.cloud publicado en NPM hacia crm1_web:80
+[ ] callback URL en Meta = https://crmapi.qpsecure.cloud/webhooks/meta/whatsapp
+[ ] verify token de Meta coincide con el configurado
+[ ] cuenta tenant tiene phone_number_id y business_account_id
+[ ] access_token fue guardado desde /crm/whatsapp/settings
+[ ] GET challenge devuelve HTTP 200
+[ ] POST firmado devuelve {"success":true,"processed":N}
+```
+
 ## Pasos de despliegue
 
 ### 1. DNS

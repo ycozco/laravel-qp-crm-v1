@@ -140,3 +140,11 @@
     height: var(--size);
     padding-inline:0
 }
+
+.menu :where(li ul) {
+    margin-top: .35rem;
+}
+
+.menu :where(li > *:not(ul, details, .menu-title)) {
+    border-radius: 0.9rem;
+}

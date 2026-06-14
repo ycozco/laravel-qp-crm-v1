@@ -1,5 +1,6 @@
-<div class="mb-5 flex flex-col gap-3 xl:flex-row xl:items-center xl:justify-between">
-    <div class="tabs tabs-boxed bg-base-100">
+<div class="mb-5 rounded-2xl border border-base-content/10 bg-base-100 p-4 shadow-sm">
+    <div class="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
+    <div class="tabs tabs-boxed bg-base-200">
         <a href="{{ route('laravel-crm.whatsapp.index', ['tenant' => $tenant?->id]) }}" class="tab {{ request()->routeIs('laravel-crm.whatsapp.index') ? 'tab-active' : '' }}">Resumen</a>
         <a href="{{ route('laravel-crm.whatsapp.settings', ['tenant' => $tenant?->id]) }}" class="tab {{ request()->routeIs('laravel-crm.whatsapp.settings') ? 'tab-active' : '' }}">Conexion</a>
         <a href="{{ route('laravel-crm.whatsapp.conversations.index', ['tenant' => $tenant?->id]) }}" class="tab {{ request()->routeIs('laravel-crm.whatsapp.conversations.*') ? 'tab-active' : '' }}">Conversaciones</a>
@@ -27,5 +28,6 @@
         @if(isset($tenantRole) && $tenantRole)
             <x-mary-badge value="Rol {{ ucfirst($tenantRole) }}" class="badge-ghost" />
         @endif
+    </div>
     </div>
 </div>

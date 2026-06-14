@@ -14,14 +14,29 @@
         </x-mary-alert>
     @endunless
 
-    <div class="grid lg:grid-cols-4 gap-4 mb-6">
+    <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-4 mb-6">
         <x-mary-stat title="Estado" value="{{ ucfirst($account?->status ?? 'pendiente') }}" icon="o-signal" color="{{ $account?->status === 'connected' ? 'text-success' : 'text-warning' }}" description="{{ $account?->display_name ?? 'Cuenta Meta demo pendiente' }}" class="shadow-sm" />
         <x-mary-stat title="Conversaciones" value="{{ $conversationCount }}" icon="o-chat-bubble-left-right" color="text-primary" description="{{ $openConversationCount }} abiertas" class="shadow-sm" />
         <x-mary-stat title="Mensajes" value="{{ $messageCount }}" icon="o-envelope" color="text-info" description="Entrantes y salientes demo" class="shadow-sm" />
         <x-mary-stat title="Token Meta" value="{{ $account?->maskedToken() ?? 'Pendiente' }}" icon="o-lock-closed" color="text-secondary" description="Nunca se muestra completo" class="shadow-sm" />
     </div>
 
-    <div class="grid lg:grid-cols-2 gap-4">
+    <div class="grid gap-4 xl:grid-cols-3">
+        <x-mary-card title="Flujo actual" shadow separator class="xl:col-span-1">
+            <div class="space-y-3 text-sm">
+                <div class="rounded-lg bg-base-200 p-3">
+                    1. Meta envia la verificacion y los eventos a <span class="font-medium break-all">{{ url(config('meta-whatsapp.webhook.path', '/webhooks/meta/whatsapp')) }}</span>.
+                </div>
+                <div class="rounded-lg bg-base-200 p-3">
+                    2. El sistema valida la firma con <code>META_WHATSAPP_APP_SECRET</code> y resuelve la cuenta por <code>phone_number_id</code> o <code>business_account_id</code>.
+                </div>
+                <div class="rounded-lg bg-base-200 p-3">
+                    3. Los eventos se guardan en webhook events, conversaciones y mensajes del tenant activo.
+                </div>
+            </div>
+        </x-mary-card>
+
+        <div class="grid gap-4 xl:col-span-2">
         <x-mary-card title="Cuenta WhatsApp Business" shadow separator>
             <dl class="grid gap-3 text-sm">
                 <div class="flex justify-between gap-4"><dt class="text-base-content/60">Telefono</dt><dd class="font-medium">{{ $account?->phone_number ?? 'No configurado' }}</dd></div>
@@ -46,5 +61,6 @@
                 @endforelse
             </div>
         </x-mary-card>
+        </div>
     </div>
 </div>

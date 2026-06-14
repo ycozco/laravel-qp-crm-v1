@@ -15,6 +15,18 @@
 
     @include('laravel-crm::livewire.whatsapp.partials.nav')
 
+    <div class="grid gap-4 md:grid-cols-3 mb-4">
+        <x-mary-card title="Flujo del webhook" shadow separator>
+            <p class="text-sm text-base-content/70">Los eventos entran por la ruta publica del webhook, se validan y luego se persisten por tenant.</p>
+        </x-mary-card>
+        <x-mary-card title="Filtro actual" shadow separator>
+            <p class="text-sm text-base-content/70">{{ $status ? 'Estado: '.ucfirst($status) : 'Mostrando todos los estados.' }}</p>
+        </x-mary-card>
+        <x-mary-card title="Busqueda" shadow separator>
+            <p class="text-sm text-base-content/70">{{ filled($search) ? 'Busqueda activa: '.$search : 'Sin texto de busqueda aplicado.' }}</p>
+        </x-mary-card>
+    </div>
+
     <x-mary-card shadow>
         <div class="overflow-x-auto">
             <table class="table">
