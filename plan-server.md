@@ -1,14 +1,42 @@
-# Plan Server Test - CRM Laravel en crm1.qpsecure.cloud
+# Plan Server Test - CRM Laravel en subdominios qpsecure.cloud
 
 ## Objetivo
 
-Preparar la rama `server-test` para desplegar el CRM Laravel en servidor usando el dominio:
+Preparar la rama `server-test` para desplegar el CRM Laravel en servidor usando este mapa de subdominios:
 
 ```text
 crm1.qpsecure.cloud
+crm1app.qpsecure.cloud
+admincrm1.qpsecure.cloud
+crmapi.qpsecure.cloud
 ```
 
 El despliegue debe funcionar detras de Nginx Proxy Manager, mantener las bases de datos fuera de exposicion publica, permitir pruebas del modulo WhatsApp y dejar listo el endpoint de webhooks Meta WhatsApp por HTTPS.
+
+## Mapa de Subdominios
+
+Uso propuesto para cada host:
+
+```text
+crm1.qpsecure.cloud
+Host principal del CRM Laravel y modulo WhatsApp.
+
+crm1app.qpsecure.cloud
+Frontend publico o app cliente separada que consume APIs.
+
+admincrm1.qpsecure.cloud
+Frontend administrativo separado, si se decide desacoplar panel admin del host principal.
+
+crmapi.qpsecure.cloud
+API publica o privada consumida por los frontends del ecosistema.
+```
+
+Recomendacion operativa:
+
+- Mantener `crm1.qpsecure.cloud` como host principal del CRM Laravel.
+- Usar `crmapi.qpsecure.cloud` para APIs desacopladas que deban ser consumidas por otros frontends.
+- Usar `crm1app.qpsecure.cloud` y `admincrm1.qpsecure.cloud` solo si de verdad van a existir como apps separadas.
+- Si admin y CRM viven en la misma app Laravel, no hace falta duplicarlos en hosts distintos todavia.
 
 ## Decision Arquitectonica
 
@@ -51,9 +79,9 @@ Si las apps frontend consumen APIs desde el navegador, CORS es necesario cuando 
 Ejemplos donde hay CORS:
 
 ```text
-https://app.qpsecure.cloud      -> https://api.qpsecure.cloud
-https://crm1.qpsecure.cloud     -> https://api.qpsecure.cloud
-https://admin.qpsecure.cloud    -> https://crm1.qpsecure.cloud
+https://crm1app.qpsecure.cloud   -> https://crmapi.qpsecure.cloud
+https://admincrm1.qpsecure.cloud -> https://crmapi.qpsecure.cloud
+https://crm1.qpsecure.cloud      -> https://crmapi.qpsecure.cloud
 ```
 
 Ejemplos donde no deberia necesitarse CORS:
@@ -62,11 +90,13 @@ Ejemplos donde no deberia necesitarse CORS:
 https://crm1.qpsecure.cloud/crm
 https://crm1.qpsecure.cloud/webhooks/meta/whatsapp
 https://crm1.qpsecure.cloud/api/...
+https://crmapi.qpsecure.cloud si frontend y API se sirven detras del mismo host no aplica, pero con subdominios separados si aplica
 ```
 
 Recomendacion:
 
 - Para este CRM, preferir mismo origen siempre que sea posible: `crm1.qpsecure.cloud`.
+- Si se va a separar frontend y API, el par recomendado es `crm1app.qpsecure.cloud` o `admincrm1.qpsecure.cloud` consumiendo `crmapi.qpsecure.cloud`.
 - Para APIs consumidas por otros frontends, permitir CORS solo por dominios concretos, no `*`.
 - Si se usan cookies/sesion, configurar `supports_credentials=true` y no usar wildcard.
 - Si se usan tokens Bearer, CORS sigue aplicando en navegador, pero no requiere cookies.
@@ -74,13 +104,16 @@ Recomendacion:
 
 ## Dominio y Rutas
 
-Dominio publico:
+Hosts publicos:
 
 ```text
 https://crm1.qpsecure.cloud
+https://crm1app.qpsecure.cloud
+https://admincrm1.qpsecure.cloud
+https://crmapi.qpsecure.cloud
 ```
 
-CRM:
+CRM principal:
 
 ```text
 https://crm1.qpsecure.cloud/crm
@@ -100,6 +133,12 @@ Webhook Meta WhatsApp:
 ```text
 GET  https://crm1.qpsecure.cloud/webhooks/meta/whatsapp
 POST https://crm1.qpsecure.cloud/webhooks/meta/whatsapp
+```
+
+API separada si se usa:
+
+```text
+https://crmapi.qpsecure.cloud
 ```
 
 ## Red Docker
@@ -160,13 +199,29 @@ crm1_internal
 
 ## Nginx Proxy Manager
 
-Crear un Proxy Host:
+Crear un Proxy Host para el CRM principal:
 
 ```text
 Domain Names: crm1.qpsecure.cloud
 Scheme: http
 Forward Hostname / IP: crm1_web
 Forward Port: 8088
+```
+
+Si se despliegan apps separadas, crear tambien:
+
+```text
+Domain Names: crm1app.qpsecure.cloud
+Forward Hostname / IP: <frontend-app-container>
+Forward Port: <frontend-port>
+
+Domain Names: admincrm1.qpsecure.cloud
+Forward Hostname / IP: <admin-app-container>
+Forward Port: <admin-port>
+
+Domain Names: crmapi.qpsecure.cloud
+Forward Hostname / IP: <api-container>
+Forward Port: <api-port>
 ```
 
 SSL:
@@ -223,7 +278,7 @@ REDIS_PASSWORD=null
 REDIS_PORT=6379
 
 SESSION_DRIVER=database
-SESSION_DOMAIN=crm1.qpsecure.cloud
+SESSION_DOMAIN=.qpsecure.cloud
 SESSION_SECURE_COOKIE=true
 
 LARAVEL_CRM_ROUTE_PREFIX=crm
@@ -244,10 +299,10 @@ META_WHATSAPP_WEBHOOK_REQUIRE_SIGNATURE=true
 META_WHATSAPP_WEBHOOK_ALLOW_FALLBACK_TENANT=false
 ```
 
-CORS si este CRM expone API consumida por otros frontends:
+CORS si este CRM o `crmapi.qpsecure.cloud` expone API consumida por otros frontends:
 
 ```text
-CORS_ALLOWED_ORIGINS=https://crm1.qpsecure.cloud,https://app.qpsecure.cloud
+CORS_ALLOWED_ORIGINS=https://crm1.qpsecure.cloud,https://crm1app.qpsecure.cloud,https://admincrm1.qpsecure.cloud
 ```
 
 Si no hay API consumida por otros frontends, mantener CORS cerrado.
@@ -375,7 +430,7 @@ Para Laravel, revisar `config/cors.php`.
 Recomendacion para APIs:
 
 ```php
-'allowed_origins' => explode(',', env('CORS_ALLOWED_ORIGINS', 'https://crm1.qpsecure.cloud')),
+'allowed_origins' => explode(',', env('CORS_ALLOWED_ORIGINS', 'https://crm1.qpsecure.cloud,https://crm1app.qpsecure.cloud,https://admincrm1.qpsecure.cloud')),
 'allowed_methods' => ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
 'allowed_headers' => ['Content-Type', 'Authorization', 'X-Requested-With', 'X-CSRF-TOKEN'],
 'supports_credentials' => true,
@@ -442,16 +497,22 @@ Seguridad:
 
 ### 1. Preparar DNS
 
-Crear registro:
+Crear registros:
 
 ```text
 crm1.qpsecure.cloud -> IP publica del servidor
+crm1app.qpsecure.cloud -> IP publica del servidor
+admincrm1.qpsecure.cloud -> IP publica del servidor
+crmapi.qpsecure.cloud -> IP publica del servidor
 ```
 
 Esperar propagacion y validar:
 
 ```bash
 nslookup crm1.qpsecure.cloud
+nslookup crm1app.qpsecure.cloud
+nslookup admincrm1.qpsecure.cloud
+nslookup crmapi.qpsecure.cloud
 ```
 
 ### 2. Preparar red de Nginx Proxy Manager
@@ -516,6 +577,14 @@ Crear Proxy Host para:
 crm1.qpsecure.cloud -> crm1_web:8088
 ```
 
+Si se despliegan frontend app, admin app y API por separado:
+
+```text
+crm1app.qpsecure.cloud -> <frontend-app-container>:<frontend-port>
+admincrm1.qpsecure.cloud -> <admin-app-container>:<admin-port>
+crmapi.qpsecure.cloud -> <api-container>:<api-port>
+```
+
 Solicitar certificado SSL Let's Encrypt.
 
 ### 8. Validar CRM
@@ -558,6 +627,9 @@ Subscribe: messages
 
 ```text
 [ ] DNS crm1.qpsecure.cloud apunta al servidor correcto
+[ ] DNS crm1app.qpsecure.cloud apunta al servidor correcto
+[ ] DNS admincrm1.qpsecure.cloud apunta al servidor correcto
+[ ] DNS crmapi.qpsecure.cloud apunta al servidor correcto
 [ ] Nginx Proxy Manager fuerza HTTPS
 [ ] APP_DEBUG=false
 [ ] APP_URL=https://crm1.qpsecure.cloud
@@ -570,12 +642,16 @@ Subscribe: messages
 [ ] Backups MySQL configurados
 [ ] Logs revisables por contenedor
 [ ] CORS limitado a origenes concretos
+[ ] `crmapi.qpsecure.cloud` solo permite `crm1.qpsecure.cloud`, `crm1app.qpsecure.cloud` y `admincrm1.qpsecure.cloud` si corresponde
 ```
 
 ## Checklist Funcional
 
 ```text
 [ ] https://crm1.qpsecure.cloud responde
+[ ] https://crm1app.qpsecure.cloud responde si existe frontend app
+[ ] https://admincrm1.qpsecure.cloud responde si existe frontend admin
+[ ] https://crmapi.qpsecure.cloud responde si existe API separada
 [ ] /crm redirige correctamente a login/dashboard
 [ ] Login admin funciona
 [ ] /crm/whatsapp carga dashboard
@@ -604,7 +680,11 @@ allowed_origins=*
 Mitigacion:
 
 ```text
-Usar solo dominios conocidos de qpsecure.cloud.
+Usar solo dominios conocidos de qpsecure.cloud:
+crm1.qpsecure.cloud
+crm1app.qpsecure.cloud
+admincrm1.qpsecure.cloud
+crmapi.qpsecure.cloud
 ```
 
 ### Servicios internos en red del proxy
@@ -668,22 +748,27 @@ Usarlo solo en server-test. Migrar a Nginx + PHP-FPM u Octane antes de produccio
 ```text
 1. Crear infra/docker/compose.server-test.yml
 2. Crear Dockerfile.server
-3. Crear .env.server-test completo para crm1.qpsecure.cloud
+3. Crear .env.server-test completo para crm1.qpsecure.cloud y subdominios relacionados
 4. Levantar stack sin proxy y probar internamente
 5. Conectar crm1_web a red de Nginx Proxy Manager
 6. Configurar Proxy Host crm1.qpsecure.cloud
-7. Validar HTTPS y login
-8. Validar modulo WhatsApp
-9. Configurar Meta Webhook
-10. Probar entrega real messages
-11. Revisar logs y hardening
-12. Promover ajustes finales a main
+7. Configurar crm1app.qpsecure.cloud, admincrm1.qpsecure.cloud y crmapi.qpsecure.cloud si se desplegaran en esta fase
+8. Validar HTTPS y login
+9. Validar modulo WhatsApp
+10. Validar CORS real entre subdominios si hay frontend/API separados
+11. Configurar Meta Webhook
+12. Probar entrega real messages
+13. Revisar logs y hardening
+14. Promover ajustes finales a main
 ```
 
 ## Estado Deseado al Final de Server Test
 
 ```text
 crm1.qpsecure.cloud operativo por HTTPS
+crm1app.qpsecure.cloud operativo si existe frontend app
+admincrm1.qpsecure.cloud operativo si existe frontend admin
+crmapi.qpsecure.cloud operativo si existe API separada
 CRM accesible en /crm
 Modulo WhatsApp visible y funcional
 Webhook Meta verificado desde Meta Developers
