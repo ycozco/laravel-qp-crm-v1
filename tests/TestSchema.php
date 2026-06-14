@@ -29,6 +29,99 @@ class TestSchema
             });
         }
 
+        Schema::create($prefix.'tenants', function (Blueprint $table) {
+            $table->bigIncrements('id');
+            $table->string('name');
+            $table->string('slug')->unique();
+            $table->string('status')->default('active');
+            $table->timestamps();
+        });
+
+        Schema::create($prefix.'tenant_users', function (Blueprint $table) {
+            $table->bigIncrements('id');
+            $table->unsignedBigInteger('tenant_id')->index();
+            $table->unsignedBigInteger('user_id')->index();
+            $table->string('role')->default('agent');
+            $table->timestamps();
+            $table->unique(['tenant_id', 'user_id']);
+        });
+
+        Schema::create($prefix.'tenant_whatsapp_accounts', function (Blueprint $table) {
+            $table->bigIncrements('id');
+            $table->unsignedBigInteger('tenant_id')->index();
+            $table->string('display_name');
+            $table->string('business_account_id')->nullable();
+            $table->string('phone_number_id')->nullable();
+            $table->string('phone_number')->nullable();
+            $table->string('app_id')->nullable();
+            $table->text('access_token_encrypted')->nullable();
+            $table->string('webhook_verify_token')->nullable();
+            $table->string('status')->default('pending');
+            $table->text('last_error')->nullable();
+            $table->timestamp('connected_at')->nullable();
+            $table->timestamps();
+        });
+
+        Schema::create($prefix.'whatsapp_conversations', function (Blueprint $table) {
+            $table->bigIncrements('id');
+            $table->unsignedBigInteger('tenant_id')->index();
+            $table->unsignedBigInteger('tenant_whatsapp_account_id')->nullable()->index();
+            $table->string('contact_name')->nullable();
+            $table->string('contact_phone')->index();
+            $table->string('status')->default('open');
+            $table->timestamp('last_message_at')->nullable();
+            $table->timestamps();
+        });
+
+        Schema::create($prefix.'whatsapp_webhook_events', function (Blueprint $table) {
+            $table->bigIncrements('id');
+            $table->unsignedBigInteger('tenant_id')->index();
+            $table->unsignedBigInteger('tenant_whatsapp_account_id')->nullable()->index();
+            $table->string('event_type')->index();
+            $table->string('field')->nullable()->index();
+            $table->string('phone_number_id')->nullable()->index();
+            $table->string('meta_object_id')->nullable()->index();
+            $table->boolean('signature_valid')->default(false);
+            $table->longText('payload_json');
+            $table->timestamp('received_at')->nullable();
+            $table->timestamp('processed_at')->nullable();
+            $table->unsignedInteger('processed_count')->default(0);
+            $table->string('processing_status')->default('received')->index();
+            $table->text('error_message')->nullable();
+            $table->timestamps();
+        });
+
+        Schema::create($prefix.'whatsapp_messages', function (Blueprint $table) {
+            $table->bigIncrements('id');
+            $table->unsignedBigInteger('tenant_id')->index();
+            $table->unsignedBigInteger('whatsapp_conversation_id')->index();
+            $table->unsignedBigInteger('whatsapp_webhook_event_id')->nullable()->index();
+            $table->string('meta_message_id')->nullable()->index();
+            $table->string('direction')->default('inbound')->index();
+            $table->string('type')->default('text');
+            $table->longText('body')->nullable();
+            $table->string('status')->default('received')->index();
+            $table->string('error_code')->nullable()->index();
+            $table->string('error_title')->nullable();
+            $table->text('error_details')->nullable();
+            $table->longText('payload_json')->nullable();
+            $table->timestamp('sent_at')->nullable();
+            $table->timestamps();
+        });
+
+        Schema::create($prefix.'whatsapp_templates', function (Blueprint $table) {
+            $table->bigIncrements('id');
+            $table->unsignedBigInteger('tenant_id')->index();
+            $table->string('name');
+            $table->string('language')->default('es');
+            $table->string('category')->nullable();
+            $table->string('status')->default('draft')->index();
+            $table->longText('body')->nullable();
+            $table->longText('payload_json')->nullable();
+            $table->timestamps();
+            $table->unique(['tenant_id', 'name', 'language']);
+        });
+
         Schema::create($prefix.'settings', function (Blueprint $table) {
             $table->bigIncrements('id');
             $table->string('name');

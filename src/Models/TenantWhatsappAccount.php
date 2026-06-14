@@ -32,4 +32,19 @@ class TenantWhatsappAccount extends Model
     {
         return $this->access_token_encrypted ? 'Configurado y cifrado' : 'Pendiente';
     }
+
+    public function maskedVerifyToken(): string
+    {
+        if (! $this->webhook_verify_token) {
+            return 'Pendiente';
+        }
+
+        $token = (string) $this->webhook_verify_token;
+
+        if (strlen($token) <= 4) {
+            return str_repeat('*', strlen($token));
+        }
+
+        return str_repeat('*', max(strlen($token) - 4, 0)).substr($token, -4);
+    }
 }

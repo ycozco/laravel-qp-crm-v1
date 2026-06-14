@@ -13,6 +13,9 @@ class WhatsappEventIndex extends Component
 {
     use ResolvesWhatsappTenant, WithPagination;
 
+    #[Url(as: 'tenant')]
+    public ?int $tenantId = null;
+
     #[Url]
     public string $search = '';
 
@@ -29,8 +32,15 @@ class WhatsappEventIndex extends Component
         $this->resetPage();
     }
 
+    public function updatedTenantId(): void
+    {
+        $this->resetPage();
+    }
+
     public function render()
     {
+        $this->syncSelectedTenant();
+
         $tenant = $this->currentTenant();
 
         $events = WhatsappWebhookEvent::query()
@@ -49,6 +59,9 @@ class WhatsappEventIndex extends Component
 
         return view('laravel-crm::livewire.whatsapp.event-index', [
             'tenant' => $tenant,
+            'availableTenants' => $this->availableTenants(),
+            'tenantRole' => $this->currentTenantRole(),
+            'canManage' => $this->canManageCurrentTenant(),
             'events' => $events,
         ]);
     }

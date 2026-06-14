@@ -13,6 +13,9 @@ class WhatsappConversationIndex extends Component
 {
     use ResolvesWhatsappTenant, WithPagination;
 
+    #[Url(as: 'tenant')]
+    public ?int $tenantId = null;
+
     #[Url]
     public string $search = '';
 
@@ -29,8 +32,15 @@ class WhatsappConversationIndex extends Component
         $this->resetPage();
     }
 
+    public function updatedTenantId(): void
+    {
+        $this->resetPage();
+    }
+
     public function render()
     {
+        $this->syncSelectedTenant();
+
         $tenant = $this->currentTenant();
 
         $conversations = WhatsappConversation::query()
@@ -48,6 +58,9 @@ class WhatsappConversationIndex extends Component
 
         return view('laravel-crm::livewire.whatsapp.conversation-index', [
             'tenant' => $tenant,
+            'availableTenants' => $this->availableTenants(),
+            'tenantRole' => $this->currentTenantRole(),
+            'canManage' => $this->canManageCurrentTenant(),
             'conversations' => $conversations,
         ]);
     }
