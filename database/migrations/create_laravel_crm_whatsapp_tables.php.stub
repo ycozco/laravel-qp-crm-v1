@@ -1,0 +1,124 @@
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    public function up(): void
+    {
+        $prefix = config('laravel-crm.db_table_prefix');
+
+        Schema::create($prefix.'tenants', function (Blueprint $table) {
+            $table->id();
+            $table->string('name');
+            $table->string('slug')->unique();
+            $table->string('status')->default('active')->index();
+            $table->timestamps();
+        });
+
+        Schema::create($prefix.'tenant_users', function (Blueprint $table) use ($prefix) {
+            $table->id();
+            $table->unsignedBigInteger('tenant_id')->index();
+            $table->unsignedBigInteger('user_id')->index();
+            $table->string('role')->default('agent');
+            $table->timestamps();
+
+            $table->unique(['tenant_id', 'user_id']);
+            $table->foreign('tenant_id')->references('id')->on($prefix.'tenants')->cascadeOnDelete();
+        });
+
+        Schema::create($prefix.'tenant_whatsapp_accounts', function (Blueprint $table) use ($prefix) {
+            $table->id();
+            $table->unsignedBigInteger('tenant_id')->index();
+            $table->string('display_name');
+            $table->string('business_account_id')->nullable();
+            $table->string('phone_number_id')->nullable();
+            $table->string('phone_number')->nullable();
+            $table->string('app_id')->nullable();
+            $table->text('access_token_encrypted')->nullable();
+            $table->string('webhook_verify_token')->nullable();
+            $table->string('status')->default('pending')->index();
+            $table->text('last_error')->nullable();
+            $table->timestamp('connected_at')->nullable();
+            $table->timestamps();
+
+            $table->foreign('tenant_id')->references('id')->on($prefix.'tenants')->cascadeOnDelete();
+        });
+
+        Schema::create($prefix.'whatsapp_conversations', function (Blueprint $table) use ($prefix) {
+            $table->id();
+            $table->unsignedBigInteger('tenant_id')->index();
+            $table->unsignedBigInteger('tenant_whatsapp_account_id')->nullable()->index();
+            $table->string('contact_name')->nullable();
+            $table->string('contact_phone')->index();
+            $table->string('status')->default('open')->index();
+            $table->timestamp('last_message_at')->nullable()->index();
+            $table->timestamps();
+
+            $table->foreign('tenant_id')->references('id')->on($prefix.'tenants')->cascadeOnDelete();
+            $table->foreign('tenant_whatsapp_account_id')->references('id')->on($prefix.'tenant_whatsapp_accounts')->nullOnDelete();
+        });
+
+        Schema::create($prefix.'whatsapp_messages', function (Blueprint $table) use ($prefix) {
+            $table->id();
+            $table->unsignedBigInteger('tenant_id')->index();
+            $table->unsignedBigInteger('whatsapp_conversation_id')->index();
+            $table->string('meta_message_id')->nullable()->index();
+            $table->string('direction')->default('inbound')->index();
+            $table->string('type')->default('text');
+            $table->longText('body')->nullable();
+            $table->string('status')->default('received')->index();
+            $table->longText('payload_json')->nullable();
+            $table->timestamp('sent_at')->nullable()->index();
+            $table->timestamps();
+
+            $table->foreign('tenant_id')->references('id')->on($prefix.'tenants')->cascadeOnDelete();
+            $table->foreign('whatsapp_conversation_id')->references('id')->on($prefix.'whatsapp_conversations')->cascadeOnDelete();
+        });
+
+        Schema::create($prefix.'whatsapp_webhook_events', function (Blueprint $table) use ($prefix) {
+            $table->id();
+            $table->unsignedBigInteger('tenant_id')->index();
+            $table->string('event_type')->index();
+            $table->string('meta_object_id')->nullable()->index();
+            $table->boolean('signature_valid')->default(false);
+            $table->longText('payload_json');
+            $table->timestamp('received_at')->nullable()->index();
+            $table->timestamp('processed_at')->nullable();
+            $table->text('error_message')->nullable();
+            $table->timestamps();
+
+            $table->foreign('tenant_id')->references('id')->on($prefix.'tenants')->cascadeOnDelete();
+        });
+
+        Schema::create($prefix.'whatsapp_templates', function (Blueprint $table) use ($prefix) {
+            $table->id();
+            $table->unsignedBigInteger('tenant_id')->index();
+            $table->string('name');
+            $table->string('language')->default('es');
+            $table->string('category')->nullable();
+            $table->string('status')->default('draft')->index();
+            $table->longText('body')->nullable();
+            $table->longText('payload_json')->nullable();
+            $table->timestamps();
+
+            $table->unique(['tenant_id', 'name', 'language']);
+            $table->foreign('tenant_id')->references('id')->on($prefix.'tenants')->cascadeOnDelete();
+        });
+    }
+
+    public function down(): void
+    {
+        $prefix = config('laravel-crm.db_table_prefix');
+
+        Schema::dropIfExists($prefix.'whatsapp_templates');
+        Schema::dropIfExists($prefix.'whatsapp_webhook_events');
+        Schema::dropIfExists($prefix.'whatsapp_messages');
+        Schema::dropIfExists($prefix.'whatsapp_conversations');
+        Schema::dropIfExists($prefix.'tenant_whatsapp_accounts');
+        Schema::dropIfExists($prefix.'tenant_users');
+        Schema::dropIfExists($prefix.'tenants');
+    }
+};
